@@ -154,9 +154,10 @@ function fmtUSD(num) {
   if (num >= 1e9) return '$' + (num / 1e9).toFixed(2) + 'B';
   if (num >= 1e6) return '$' + (num / 1e6).toFixed(2) + 'M';
   if (num >= 1e3) return '$' + (num / 1e3).toFixed(1) + 'K';
+  if (num >= 1) return '$' + num.toFixed(2);
+  if (num >= 0.01) return '$' + num.toFixed(2);
   if (num < 0.000001) return '$' + num.toFixed(8);
-  if (num < 0.01) return '$' + num.toFixed(6);
-  return '$' + num.toFixed(4);
+  return '$' + num.toFixed(6);
 }
 
 function fmtMcap(num) {
@@ -495,7 +496,7 @@ function renderCalloutsGrid() {
           <!-- Multiplier Hero Badge -->
           <div class="multiplier-hero-pill">
             <span class="multiplier-badge ${multClass}">${multText}</span>
-            <span class="mult-label">GAIN</span>
+            <span class="mult-label">${mult >= 1.0 ? 'GAIN' : 'LOSS'}</span>
           </div>
         </div>
 
@@ -507,7 +508,7 @@ function renderCalloutsGrid() {
           </div>
           <div class="stat-item">
             <span class="label">CURRENT MCAP</span>
-            <span class="value ${mult >= 1 ? 'color-green' : 'color-purple'}">${fmtMcap(currMcap)}</span>
+            <span class="value ${currMcap >= entryMcap ? 'color-green' : 'color-red'}">${fmtMcap(currMcap)}</span>
           </div>
         </div>
 
@@ -904,6 +905,10 @@ function switchTab(tabId) {
   dom.panes.forEach((p) => {
     p.classList.toggle('active', p.id === tabId);
   });
+
+  if (tabId === 'tab-lore' && typeof window.handleGameResize === 'function') {
+    requestAnimationFrame(() => window.handleGameResize());
+  }
 }
 
 /* ==========================================================================

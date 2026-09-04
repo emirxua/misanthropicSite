@@ -14,9 +14,9 @@
   const restartBtn = document.getElementById('restartGame');
   const deathMsgEl = document.getElementById('deathMessage');
 
-  const GROUND_Y = 320;
-  const LOGIC_W = 720;
-  const LOGIC_H = 420;
+  let GROUND_Y = 220;
+  let LOGIC_W = 800;
+  let LOGIC_H = 280;
   const GRAVITY = 0.65;
   const JUMP_FORCE = -13;
   const BASE_SPEED = 4.1;
@@ -269,18 +269,33 @@
 
   function drawBackground() {
     const grad = ctx.createLinearGradient(0, 0, 0, LOGIC_H);
-    grad.addColorStop(0, '#3d2518'); grad.addColorStop(0.5, '#5c3828'); grad.addColorStop(1, '#2a1a12');
-    ctx.fillStyle = grad; ctx.fillRect(0, 0, LOGIC_W, LOGIC_H);
+    grad.addColorStop(0, '#070709');
+    grad.addColorStop(0.5, '#0e0e13');
+    grad.addColorStop(1, '#16161f');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, LOGIC_W, LOGIC_H);
+
     clouds.forEach((c) => {
-      ctx.fillStyle = 'rgba(255,248,243,0.06)';
-      ctx.beginPath(); ctx.ellipse(c.x, c.y, c.w / 2, 20, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+      ctx.beginPath();
+      ctx.ellipse(c.x, c.y, c.w / 2, 14, 0, 0, Math.PI * 2);
+      ctx.fill();
     });
-    ctx.fillStyle = '#1a1210'; ctx.fillRect(0, GROUND_Y + 52, LOGIC_W, LOGIC_H - GROUND_Y - 52);
-    ctx.strokeStyle = 'rgba(201,111,74,0.4)'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(0, GROUND_Y + 52); ctx.lineTo(LOGIC_W, GROUND_Y + 52); ctx.stroke();
-    for (let i = 0; i < LOGIC_W; i += 40) {
-      ctx.fillStyle = 'rgba(201,111,74,0.15)';
-      ctx.fillRect(i - (frame * speed * 0.5) % 40, GROUND_Y + 58, 20, 4);
+
+    const roadY = GROUND_Y + 50;
+    ctx.fillStyle = '#08080a';
+    ctx.fillRect(0, roadY, LOGIC_W, LOGIC_H - roadY);
+
+    ctx.strokeStyle = '#ff5500';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, roadY);
+    ctx.lineTo(LOGIC_W, roadY);
+    ctx.stroke();
+
+    for (let i = 0; i < LOGIC_W; i += 48) {
+      ctx.fillStyle = 'rgba(255, 85, 0, 0.4)';
+      ctx.fillRect(i - ((frame * speed * 0.5) % 48), roadY + 8, 22, 3);
     }
   }
 
@@ -361,13 +376,16 @@
   function handleResize() {
     const parent = canvas.parentElement;
     if (!parent) return;
-    const w = Math.max(parent.clientWidth, 320);
-    const aspect = LOGIC_W / LOGIC_H;
-    const h = w / aspect;
+    const w = parent.clientWidth > 50 ? parent.clientWidth : 800;
+    const h = parent.clientHeight > 50 ? parent.clientHeight : 280;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-    canvas.style.width = w + 'px';
-    canvas.style.height = h + 'px';
+    LOGIC_W = w;
+    LOGIC_H = h;
+    GROUND_Y = h - 68;
+    if (player.grounded) {
+      player.y = GROUND_Y;
+    }
 
     const nextWidth = Math.round(w * dpr);
     const nextHeight = Math.round(h * dpr);
@@ -375,9 +393,25 @@
       canvas.width = nextWidth;
       canvas.height = nextHeight;
     }
-    renderScale = canvas.width / LOGIC_W;
+
+    renderScale = dpr;
     ctx.setTransform(renderScale, 0, 0, renderScale, 0, 0);
     ctx.imageSmoothingEnabled = true;
+  }
+
+  // Auto-resize on window, container or tab change
+  window.addEventListener('resize', handleResize);
+  window.addEventListener('orientationchange', handleResize);
+  window.handleGameResize = handleResize;
+
+  if (window.ResizeObserver) {
+    const parent = canvas.parentElement;
+    if (parent) {
+      const ro = new ResizeObserver(() => {
+        if (parent.clientWidth > 50) handleResize();
+      });
+      ro.observe(parent);
+    }
   }
 
   // === AUTO INFINITE MODE (perfect star collector — catches every star, infinite run, no deaths) ===
