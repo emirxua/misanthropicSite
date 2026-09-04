@@ -332,6 +332,21 @@ img {
   border-radius: 9999px;
   white-space: nowrap;
   font-size: 12px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ticker-tape:hover {
+  border-color: var(--accent-orange);
+  background: var(--bg-surface-hover);
+  box-shadow: 0 0 10px var(--accent-orange-glow);
+  transform: translateY(-1px);
+}
+
+.ticker-tape:hover .seg-token {
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .ticker-seg {
@@ -486,6 +501,21 @@ html.light .theme-icon-moon { display: inline-block; }
   font-style: italic;
   color: var(--text-secondary);
   font-family: "Space Grotesk", sans-serif;
+}
+
+.telem-token-link {
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.telem-token-link:hover {
+  opacity: 0.85;
+}
+
+.telem-token-link:hover .telem-val {
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 /* --------------------------------------------------------------------------
@@ -1569,6 +1599,22 @@ html.light .theme-icon-moon { display: inline-block; }
   gap: 10px;
 }
 
+.radar-token-meta.radar-token-link {
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.radar-token-meta.radar-token-link:hover {
+  opacity: 0.88;
+}
+
+.radar-token-meta.radar-token-link:hover .radar-sym {
+  color: var(--accent-orange);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .radar-avatar {
   width: 34px;
   height: 34px;
@@ -2251,6 +2297,34 @@ html.light .theme-icon-moon { display: inline-block; }
 
   .brand-txt {
     font-size: 14px;
+  }
+
+  .game-box {
+    padding: 12px 10px;
+  }
+
+  .game-screen {
+    height: 210px;
+  }
+
+  .game-metrics {
+    gap: 8px;
+    font-size: 11px;
+  }
+
+  .tokenomics-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .tok-pill {
+    padding: 8px 10px;
+  }
+
+  .tok-pill .val {
+    font-size: 11px;
+    white-space: normal;
+    word-break: break-word;
   }
 }
 
