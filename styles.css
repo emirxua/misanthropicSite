@@ -296,6 +296,7 @@ img {
   font-size: 15px;
   letter-spacing: -0.3px;
   color: var(--text-primary);
+  text-transform: lowercase;
 }
 
 .tag-pro {
