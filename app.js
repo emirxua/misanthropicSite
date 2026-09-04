@@ -216,6 +216,25 @@ function sanitizeUrl(url) {
   return clean;
 }
 
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function linkifyThesis(text) {
+  if (!text) return '';
+  const escaped = escapeHtml(text);
+  const urlRegex = /(https?:\/\/[^\s<]+)/g;
+  return escaped.replace(urlRegex, (url) => {
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="thesis-link" onclick="event.stopPropagation()">${url}</a>`;
+  });
+}
+
 // Generate deterministic styling for token avatar badges
 function getTokenGradient(symbol) {
   const styles = [
@@ -464,9 +483,13 @@ function renderCalloutsGrid() {
     const mult = Number(c.multiplier || c.multiple || 1);
     const multText = mult.toFixed(2) + 'x';
     const multClass = mult >= 5.0 ? 'mult-super' : mult >= 1.0 ? 'mult-up' : 'mult-down';
+    const isGain = mult >= 1.0;
 
     const entryMcap = Number(c.entryMcap || c.marketCap || 0);
     const currMcap = Number(c.currentMcap || c.marketCap || 0);
+    const dexPrice = Number(c.currentPriceUsd || c.calloutPriceUsd || c.priceUsd || 0);
+    const dexPriceFormatted = dexPrice > 0 ? fmtUSD(dexPrice) : '—';
+
     const callerName = c.callerLabel || (c.callerXUsername ? '@' + c.callerXUsername : fmtShortAddr(c.callerWallet));
     const callerInitial = (callerName.replace('@', '')[0] || 'A').toUpperCase();
     const callerAvatar = sanitizeUrl(c.callerAvatarUrl);
@@ -474,8 +497,11 @@ function renderCalloutsGrid() {
     const tokenInitials = sym.slice(0, 2);
     const tokenGrad = getTokenGradient(sym);
 
-    const thesis = c.thesis ? `“${c.thesis}”` : 'Live Solana alpha signal detected in the trenches.';
+    const rawThesis = c.thesis ? `“${c.thesis}”` : 'Live Solana alpha signal detected in the trenches.';
+    const formattedThesis = linkifyThesis(rawThesis);
     const xLink = c.callerXUsername ? `https://x.com/${c.callerXUsername}` : null;
+    const dexUrl = `https://dexscreener.com/solana/${mint}`;
+    const pumpUrl = `https://pump.fun/coin/${mint}`;
 
     return `
       <div class="callout-card" data-mint="${mint}">
@@ -489,15 +515,18 @@ function renderCalloutsGrid() {
               <div class="caller-fallback-badge">${callerInitial}</div>
             `}
             <div class="caller-name-wrap">
-              <span class="caller-name">${callerName}</span>
-              ${xLink ? `<a href="${xLink}" target="_blank" rel="noopener noreferrer" class="caller-x-link" title="X Profile">𝕏</a>` : ''}
+              ${xLink ? `
+                <a href="${xLink}" target="_blank" rel="noopener noreferrer" class="caller-name caller-name-link" title="Caller X Profile">${callerName} 𝕏</a>
+              ` : `
+                <span class="caller-name">${callerName}</span>
+              `}
             </div>
           </div>
           <span class="callout-time">${timeAgo(c.createdAt)}</span>
         </div>
 
-        <!-- Token Banner -->
-        <div class="card-token-banner">
+        <!-- Token Banner (Direct Callout Link to DexScreener) -->
+        <a href="${dexUrl}" target="_blank" rel="noopener noreferrer" class="card-token-banner" title="Inspect $${sym} on DexScreener">
           <div class="token-info-left">
             ${coinImg ? `
               <img class="token-avatar" src="${coinImg}" alt="${sym}" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -514,15 +543,19 @@ function renderCalloutsGrid() {
             </div>
           </div>
 
-          <!-- Multiplier Hero Badge -->
+          <!-- Multiplier Hero Badge (Accurate GAIN vs LOSS) -->
           <div class="multiplier-hero-pill">
             <span class="multiplier-badge ${multClass}">${multText}</span>
-            <span class="mult-label">${mult >= 1.0 ? 'GAIN' : 'LOSS'}</span>
+            <span class="mult-label ${isGain ? 'color-green' : 'color-red'}">${isGain ? 'GAIN' : 'LOSS'}</span>
           </div>
-        </div>
+        </a>
 
-        <!-- Telemetry Stats -->
+        <!-- Real DEX Telemetry Stats Row -->
         <div class="callout-stats-row">
+          <div class="stat-item">
+            <span class="label">DEX PRICE</span>
+            <span class="value font-mono">${dexPriceFormatted}</span>
+          </div>
           <div class="stat-item">
             <span class="label">ENTRY MCAP</span>
             <span class="value">${fmtMcap(entryMcap)}</span>
@@ -533,24 +566,27 @@ function renderCalloutsGrid() {
           </div>
         </div>
 
-        <!-- Caller Thesis Note (NO SCROLLBARS) -->
+        <!-- Caller Thesis Note (Clickable Links & Zero Overflow) -->
         <div class="callout-thesis-box">
-          <p>${thesis}</p>
+          <p>${formattedThesis}</p>
         </div>
 
-        <!-- Card Action Footer -->
+        <!-- Card Action Footer (All Direct Callout Links) -->
         <div class="card-actions-footer">
-          <button type="button" class="card-mint-btn" onclick="copyToClipboard('${mint}', '${sym} Mint')">
+          <button type="button" class="card-mint-btn" onclick="copyToClipboard('${mint}', '${sym} Mint')" title="Copy CA (${mint})">
             <span>${fmtShortAddr(mint)}</span>
           </button>
 
           <div class="card-links-group">
-            <button type="button" class="card-btn-chart" onclick="openChartModal('${mint}', '${sym}')" title="Open live chart">
-              Chart
+            <button type="button" class="card-btn-chart" onclick="openChartModal('${mint}', '${sym}')" title="Live DexScreener Chart Modal">
+              Chart ↗
             </button>
-            <button type="button" class="card-btn-inspect" onclick="inspectTokenRadar('${mint}', '${sym}', '${coinImg}', '${name.replace(/'/g, "\\'")}')" title="Lock into Radar">
-              Radar
-            </button>
+            <a href="${dexUrl}" target="_blank" rel="noopener noreferrer" class="card-btn-dex" title="Open DexScreener">
+              Dex ↗
+            </a>
+            <a href="${pumpUrl}" target="_blank" rel="noopener noreferrer" class="card-btn-pump" title="Open Pump.fun">
+              Pump ↗
+            </a>
           </div>
         </div>
       </div>
@@ -646,9 +682,12 @@ function renderTrendingGrid() {
     const tokenInitials = sym.slice(0, 2);
     const tokenGrad = getTokenGradient(sym);
 
+    const dexUrl = `https://dexscreener.com/solana/${mint}`;
+    const pumpUrl = `https://pump.fun/coin/${mint}`;
+
     return `
       <div class="trend-card" data-mint="${mint}">
-        <div class="trend-head-row">
+        <a href="${dexUrl}" target="_blank" rel="noopener noreferrer" class="trend-head-row" title="Inspect $${sym} on DexScreener">
           <div class="trend-token-left">
             ${img ? `
               <img class="trend-avatar" src="${img}" alt="${sym}" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -662,7 +701,7 @@ function renderTrendingGrid() {
             </div>
           </div>
           <span class="trend-chg-badge ${chg.cls}">${chg.text}</span>
-        </div>
+        </a>
 
         <div class="trend-stats-grid">
           <div class="stat-item">
@@ -684,16 +723,19 @@ function renderTrendingGrid() {
         </div>
 
         <div class="card-actions-footer">
-          <button type="button" class="card-mint-btn" onclick="copyToClipboard('${mint}', '${sym} Mint')">
-            <span>Copy CA</span>
+          <button type="button" class="card-mint-btn" onclick="copyToClipboard('${mint}', '${sym} Mint')" title="Copy CA (${mint})">
+            <span>${fmtShortAddr(mint)}</span>
           </button>
           <div class="card-links-group">
-            <button type="button" class="card-btn-chart" onclick="openChartModal('${mint}', '${sym}')" title="Open live chart">
-              Chart
+            <button type="button" class="card-btn-chart" onclick="openChartModal('${mint}', '${sym}')" title="Live DexScreener Chart Modal">
+              Chart ↗
             </button>
-            <button type="button" class="card-btn-inspect" onclick="inspectTokenRadar('${mint}', '${sym}', '${img}', '${name.replace(/'/g, "\\'")}', '${price}', '${chg.text}', '${chg.cls}', '${mcap}', '${vol}')" title="Lock into Radar">
-              Radar
-            </button>
+            <a href="${dexUrl}" target="_blank" rel="noopener noreferrer" class="card-btn-dex" title="Open DexScreener">
+              Dex ↗
+            </a>
+            <a href="${pumpUrl}" target="_blank" rel="noopener noreferrer" class="card-btn-pump" title="Open Pump.fun">
+              Pump ↗
+            </a>
           </div>
         </div>
       </div>
