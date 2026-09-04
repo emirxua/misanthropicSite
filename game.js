@@ -126,10 +126,12 @@
       localStorage.setItem('misanthropic_high', String(highScore));
     }
     const msgs = getDeathMessages();
-    deathMsgEl.textContent = msgs[Math.floor(Math.random() * msgs.length)];
-    document.getElementById('finalScore').textContent = score;
-    document.getElementById('finalPump').textContent = pump;
-    gameOverOverlay.classList.remove('hidden');
+    if (deathMsgEl) deathMsgEl.textContent = msgs[Math.floor(Math.random() * msgs.length)];
+    const finalScoreEl = document.getElementById('finalScore');
+    const finalPumpEl = document.getElementById('finalPump');
+    if (finalScoreEl) finalScoreEl.textContent = score;
+    if (finalPumpEl) finalPumpEl.textContent = pump;
+    if (gameOverOverlay) gameOverOverlay.classList.remove('hidden');
     shakeTimer = 20;
     updateHUD();
   }
@@ -357,7 +359,7 @@
     ctx.font = '600 14px Space Grotesk, sans-serif';
     ctx.textAlign = 'left';
     const speedStr = `${(speed / BASE_SPEED).toFixed(1)}x`;
-    ctx.fillText(t('game.speed') + ': ' + speedStr, 16, 28);
+    ctx.fillText('SPEED: ' + speedStr, 16, 28);
   }
 
   function draw() {
@@ -542,7 +544,23 @@
     btn.addEventListener('mouseleave', end);
   });
 
-  window.addEventListener('resize', handleResize);
+  // Wire inline action buttons in HTML
+  const inlineAutoBtn = document.getElementById('autoPlayBtn');
+  if (inlineAutoBtn) {
+    inlineAutoBtn.addEventListener('click', () => {
+      setAutoMode(!autoMode);
+      inlineAutoBtn.classList.toggle('active', autoMode);
+      inlineAutoBtn.textContent = autoMode ? '✓ AUTO ACTIVE (Collecting All Stars)' : '∞ AUTO (Infinite Star Collector)';
+    });
+  }
+
+  const shareScoreBtn = document.getElementById('shareScoreBtn');
+  if (shareScoreBtn) {
+    shareScoreBtn.addEventListener('click', () => {
+      const text = `I scored ${score} avoiding humans on $MISANTHROPIC Runner! 🌸 Run on @getmisanthropic: https://getmisanthropic.xyz`;
+      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+    });
+  }
 
   // create the auto button + support direct ?auto launch
   autoBtnEl = createAutoButton();

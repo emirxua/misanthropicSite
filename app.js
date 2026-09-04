@@ -36,7 +36,7 @@ const state = {
   radarChangeCls: 'change-neutral',
   radarMcap: '—',
   radarVol: '—',
-  radarLiq: '100% Burned',
+  radarLiq: 'Pump.fun Coin (100% Burned)',
 
   // Live callouts
   callouts: [],
@@ -353,7 +353,7 @@ async function fetchTokenStats() {
       }
       if (dom.tickerMcap) dom.tickerMcap.textContent = fmtMcap(pairData.marketCap);
       if (dom.tickerVol) dom.tickerVol.textContent = fmtUSD(pairData.volume24h);
-      if (dom.heroLiqVal) dom.heroLiqVal.textContent = fmtMcap(pairData.liquidityUsd || 11600);
+      if (dom.heroLiqVal) dom.heroLiqVal.textContent = 'Pump.fun Coin (100% Burned)';
 
       if (state.radarMint === MIS_CA) {
         state.radarPrice = fmtUSD(pairData.priceUsd);
@@ -361,7 +361,7 @@ async function fetchTokenStats() {
         state.radarChangeCls = chg.cls;
         state.radarMcap = fmtMcap(pairData.marketCap);
         state.radarVol = fmtUSD(pairData.volume24h);
-        state.radarLiq = pairData.liquidityUsd ? `${fmtMcap(pairData.liquidityUsd)} (100% Burned)` : '100% Burned';
+        state.radarLiq = 'Pump.fun Coin (100% Burned)';
         updateRadarDOM();
       }
     }
@@ -1001,10 +1001,16 @@ function scrollToSidebarRadar() {
 }
 
 function scrollToGame() {
-  const game = document.getElementById('game');
-  if (game) {
-    game.scrollIntoView({ behavior: 'smooth' });
-  }
+  switchTab('tab-lore');
+  setTimeout(() => {
+    if (typeof window.handleGameResize === 'function') {
+      window.handleGameResize();
+    }
+    const game = document.getElementById('game');
+    if (game) {
+      game.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, 60);
 }
 
 /* ==========================================================================

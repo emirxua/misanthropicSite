@@ -1420,6 +1420,16 @@ html.light .theme-icon-moon { display: inline-block; }
   font-family: "JetBrains Mono", monospace;
 }
 
+.game-over-stats {
+  font-size: 13px;
+  color: var(--accent-orange);
+  letter-spacing: 0.04em;
+}
+
+.game-over-stats strong {
+  color: #ffffff;
+}
+
 .game-actions {
   display: flex;
   gap: 10px;
