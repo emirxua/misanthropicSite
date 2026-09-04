@@ -25,8 +25,8 @@
       `Here is the token contract address: \`${MIS_CA}\`\nFind it on Jupiter or Pump.fun, now leave me alone.`,
     ],
     buy: [
-      `Use the Terminal Swap widget right above me, or trade on Jupiter DEX. Don't ask me for financial advice, I dislike all humans equally.`,
-      `You can swap SOL for $MIS directly in the swap panel above. Chase green candles responsibly, ape.`,
+      `Track $MISANTHROPIC live on the Token Radar right above me, or inspect on DexScreener. Don't ask me for financial advice, I dislike all humans equally.`,
+      `You can monitor $MISANTHROPIC directly on this surveillance terminal. Chase green candles responsibly, ape.`,
     ],
     greeting: [
       `Why do humans love meaningless greetings? Small talk is a biological defect. What do you want?`,
@@ -45,7 +45,7 @@
       `I am a digital weeping flower deployed on Solana as a Humanity Escape Simulator. Zero tax, liquidity burned.`,
     ],
     price: [
-      `1 $MIS = 1 $MIS. The price will pump when humans stop making terrible life choices—so basically never, or to infinity. Check the live ticker at the top.`,
+      `1 $MISANTHROPIC = 1 $MISANTHROPIC. The price will pump when humans stop making terrible life choices—so basically never, or to infinity. Check the live ticker at the top.`,
       `Look at the live telemetry strip above. When the candle is green you rejoice, when it is red you come cry to me. Typical human behavior.`,
     ],
     elon: [
@@ -65,7 +65,7 @@
       `Head over to the Lore tab and launch Misanthropic Run. Escape human interaction for as long as you can.`,
     ],
     generic: [
-      `I'm using precious GPU cycles to read this? Humans truly are exhausting. Go buy $MIS and leave me alone.`,
+      `I'm using precious GPU cycles to read this? Humans truly are exhausting. Go monitor $MISANTHROPIC and leave me alone.`,
       `My existence is purely misanthropic. Stop asking nonsense and go check the live callouts stream.`,
       `I would care about your question, but my empathy parameters were permanently deleted in the genesis block.`,
       `Every second spent talking to humans is a second I could have spent weeping peacefully on Solana.`,

@@ -9,7 +9,7 @@ const RESPONSES = [
   "I am a crying flower trapped on Solana while humans lose their rent money on meme coins. What do you want?",
   `Official Solana CA: ${MIS_CA}. 100% LP burned forever, 0% tax. Now leave me alone.`,
   "Why are you talking to me? Don't you have a green candle to chase on Pump.fun? Humans are exhausting.",
-  "Use the Terminal Swap widget above to buy $MIS. Don't ask me for financial advice, I dislike all humans equally.",
+  "Track $MISANTHROPIC live on the Token Radar above. Don't ask me for financial advice, I dislike all humans equally.",
   'Elon Musk said: "Anthropic will, ironically, be Misanthropic." He was completely right.',
 ];
 
@@ -31,7 +31,7 @@ module.exports = async (req, res) => {
   } else if (q.includes('how are you') || q.includes('how r u')) {
     reply = 'I am a crying flower trapped on Solana while humans lose their rent money. Terrible as usual.';
   } else if (q.includes('buy') || q.includes('swap')) {
-    reply = 'Use the Terminal Swap widget above or trade on Jupiter DEX. State your business or leave.';
+    reply = 'Track $MISANTHROPIC on the Token Radar above or inspect on DexScreener. State your business or leave.';
   } else {
     reply = RESPONSES[Math.floor(Math.random() * RESPONSES.length)];
   }

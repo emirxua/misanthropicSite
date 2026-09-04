@@ -27,7 +27,7 @@ const state = {
 
   // Active Surveillance Radar target
   radarMint: MIS_CA,
-  radarSymbol: '$MIS',
+  radarSymbol: '$MISANTHROPIC',
   radarName: 'Misanthropic',
   radarImg: 'assets/flower.png',
   radarPrice: '—',
