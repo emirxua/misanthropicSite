@@ -260,10 +260,24 @@ function showToast(message) {
   if (!dom.toast) return;
   dom.toast.textContent = message;
   dom.toast.classList.add('show');
+  dom.toast.style.cursor = 'pointer';
+  dom.toast.title = 'Click to view latest signal';
+  dom.toast.onclick = () => {
+    switchTab('tab-callouts');
+    state.calloutFilter = 'all';
+    state.calloutSearch = '';
+    const allChip = document.querySelector('.chip-item[data-filter="all"]');
+    if (allChip) {
+      document.querySelectorAll('.chip-item').forEach((c) => c.classList.remove('active'));
+      allChip.classList.add('active');
+    }
+    renderCalloutsGrid();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
   if (toastTimer) clearTimeout(toastTimer);
   toastTimer = setTimeout(() => {
     dom.toast.classList.remove('show');
-  }, 2200);
+  }, 2600);
 }
 
 function playSignalChime() {
@@ -378,7 +392,8 @@ let isSyncingDexPrices = false;
 
 function getCalloutTimestamp(c) {
   if (!c) return 0;
-  const t = c.createdAt || c.timestamp || c.date;
+  if (c._arrivalTimestamp) return c._arrivalTimestamp;
+  const t = c.createdAt || c.timestamp || c.date || c.maxMultiplierAt;
   if (typeof t === 'number') return t;
   if (typeof t === 'string') {
     const n = Number(t);
@@ -390,7 +405,14 @@ function getCalloutTimestamp(c) {
 }
 
 function sortCalloutsNewestFirst(list) {
-  return [...list].sort((a, b) => getCalloutTimestamp(b) - getCalloutTimestamp(a));
+  return [...list].sort((a, b) => {
+    if (a._isNewArrival && !b._isNewArrival) return -1;
+    if (!a._isNewArrival && b._isNewArrival) return 1;
+    if (a._isNewArrival && b._isNewArrival) {
+      return (b._arrivalTimestamp || 0) - (a._arrivalTimestamp || 0);
+    }
+    return getCalloutTimestamp(b) - getCalloutTimestamp(a);
+  });
 }
 
 function updateLiveTimestamps() {
@@ -446,19 +468,27 @@ async function fetchCallouts() {
       if (id && !state.knownCalloutIds.has(id)) {
         if (!isFirstCalloutsLoad) {
           c._isNewArrival = true;
+          c._arrivalTimestamp = Date.now();
           newlyArrived.push(c);
         }
         state.knownCalloutIds.add(id);
       }
     });
 
-    // Alert user if new signals arrived
+    // Alert user if new signals arrived and prepend them directly to the top
     if (newlyArrived.length > 0) {
       playSignalChime();
       const topNew = newlyArrived[0];
       const caller = topNew.callerLabel || (topNew.callerXUsername ? '@' + topNew.callerXUsername : 'Caller');
       const sym = (topNew.coinSymbol || 'TOKEN').toUpperCase();
       showToast(`🚨 NEW SIGNAL: $${sym} by ${caller}`);
+
+      // Prepend newly arrived items directly so they appear at position #1
+      const newIds = new Set(newlyArrived.map((n) => n.calloutId || (n.coinMint + '_' + (n.createdAt || ''))));
+      const existing = rawCallouts.filter((c) => !newIds.has(c.calloutId || (c.coinMint + '_' + (c.createdAt || ''))));
+      rawCallouts = [...newlyArrived, ...existing];
+    } else {
+      rawCallouts = sortCalloutsNewestFirst(rawCallouts);
     }
 
     // Preserve previously synced live Dex prices so they don't revert
@@ -706,7 +736,7 @@ function renderCalloutsGrid() {
     const pumpUrl = `https://pump.fun/coin/${mint}`;
 
     return `
-      <div class="callout-card" data-callout-id="${calloutId}" data-mint="${mint}" data-entry-mcap="${entryMcap}" data-orig-mult="${c.multiplier || c.multiple || 1}" data-created="${createdAt}">
+      <div class="callout-card ${c._isNewArrival ? 'is-new-arrival' : ''}" data-callout-id="${calloutId}" data-mint="${mint}" data-entry-mcap="${entryMcap}" data-orig-mult="${c.multiplier || c.multiple || 1}" data-created="${createdAt}">
         <!-- Caller Row -->
         <div class="card-caller-row">
           <div class="caller-identity">
@@ -722,10 +752,10 @@ function renderCalloutsGrid() {
               ` : `
                 <span class="caller-name">${callerName}</span>
               `}
-              ${isFresh ? `<span class="badge-new-live"><span class="pulse-dot"></span> LIVE</span>` : ''}
+              ${c._isNewArrival ? `<span class="badge-new-live badge-new-flash"><span class="pulse-radar-dot"></span> NEW SIGNAL</span>` : (isFresh ? `<span class="badge-new-live"><span class="pulse-dot"></span> LIVE</span>` : '')}
             </div>
           </div>
-          <span class="callout-time">${timeAgo(createdAt)}</span>
+          <span class="callout-time">${c._isNewArrival ? 'Just now' : timeAgo(createdAt)}</span>
         </div>
 
         <!-- Token Banner (Direct Callout Link to DexScreener) -->

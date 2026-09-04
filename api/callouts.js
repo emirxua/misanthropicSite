@@ -19,8 +19,14 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const upstream = await fetch('https://www.outbid.bond/api/callouts', {
-      headers: { 'User-Agent': USER_AGENT, 'Accept': 'application/json' },
+    const upstream = await fetch(`https://www.outbid.bond/api/callouts?_t=${Date.now()}`, {
+      cache: 'no-store',
+      headers: {
+        'User-Agent': USER_AGENT,
+        'Accept': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache'
+      },
     });
 
     if (upstream.ok) {
@@ -29,8 +35,14 @@ module.exports = async (req, res) => {
     }
 
     // Fallback URL
-    const fallback = await fetch('https://outbid.bond/api/callouts', {
-      headers: { 'User-Agent': USER_AGENT, 'Accept': 'application/json' },
+    const fallback = await fetch(`https://outbid.bond/api/callouts?_t=${Date.now()}`, {
+      cache: 'no-store',
+      headers: {
+        'User-Agent': USER_AGENT,
+        'Accept': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache'
+      },
     });
 
     if (fallback.ok) {

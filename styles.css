@@ -826,6 +826,24 @@ html.light .theme-icon-moon { display: inline-block; }
   50% { opacity: 0.4; transform: scale(1.35); box-shadow: 0 0 10px var(--accent-orange); }
 }
 
+.callout-card.is-new-arrival {
+  border-color: var(--accent-orange) !important;
+  box-shadow: 0 0 20px var(--accent-orange-glow), var(--shadow-card) !important;
+  animation: newArrivalFlash 2s ease-in-out infinite alternate;
+}
+
+@keyframes newArrivalFlash {
+  0% { border-color: rgba(255, 85, 0, 0.4); box-shadow: 0 0 10px rgba(255, 85, 0, 0.2); }
+  100% { border-color: #ff5500; box-shadow: 0 0 24px rgba(255, 85, 0, 0.5); }
+}
+
+.badge-new-flash {
+  background: var(--accent-orange) !important;
+  color: #ffffff !important;
+  border-color: #ff5500 !important;
+  box-shadow: 0 0 8px rgba(255, 85, 0, 0.5);
+}
+
 /* Dynamic price tick flash animations */
 @keyframes flashGreen {
   0% { color: #10b981 !important; background-color: rgba(16, 185, 129, 0.22); text-shadow: 0 0 8px rgba(16, 185, 129, 0.6); }
