@@ -221,21 +221,20 @@ function sanitizeUrl(url) {
   return clean;
 }
 
-// Generate deterministic vibrant gradient for token avatar badges
+// Generate deterministic styling for token avatar badges
 function getTokenGradient(symbol) {
-  const gradients = [
-    'linear-gradient(135deg, #00f2fe 0%, #4facfe 100%)',
-    'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)',
-    'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-    'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-    'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
-    'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
+  const styles = [
+    'background: #18181b; border: 1px solid rgba(255,85,0,0.4); color: #ff5500;',
+    'background: #27272a; border: 1px solid rgba(255,255,255,0.15); color: #ffffff;',
+    'background: #1c1917; border: 1px solid rgba(255,119,0,0.4); color: #ff7700;',
+    'background: #09090b; border: 1px solid #3f3f46; color: #ffffff;',
+    'background: #18181b; border: 1px solid #52525b; color: #f4f4f5;',
   ];
   let hash = 0;
   for (let i = 0; i < (symbol || '').length; i++) {
     hash = symbol.charCodeAt(i) + ((hash << 5) - hash);
   }
-  return gradients[Math.abs(hash) % gradients.length];
+  return styles[Math.abs(hash) % styles.length];
 }
 
 /* ==========================================================================
@@ -499,9 +498,9 @@ function renderCalloutsGrid() {
           <div class="token-info-left">
             ${coinImg ? `
               <img class="token-avatar" src="${coinImg}" alt="${sym}" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-              <div class="token-fallback-avatar" style="display:none; background:${tokenGrad};">${tokenInitials}</div>
+              <div class="token-fallback-avatar" style="display:none; ${tokenGrad}">${tokenInitials}</div>
             ` : `
-              <div class="token-fallback-avatar" style="background:${tokenGrad};">${tokenInitials}</div>
+              <div class="token-fallback-avatar" style="${tokenGrad}">${tokenInitials}</div>
             `}
             <div class="token-titles">
               <div class="token-symbol-row">
@@ -650,9 +649,9 @@ function renderTrendingGrid() {
           <div class="trend-token-left">
             ${img ? `
               <img class="trend-avatar" src="${img}" alt="${sym}" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-              <div class="trend-fallback-avatar" style="display:none; background:${tokenGrad};">${tokenInitials}</div>
+              <div class="trend-fallback-avatar" style="display:none; ${tokenGrad}">${tokenInitials}</div>
             ` : `
-              <div class="trend-fallback-avatar" style="background:${tokenGrad};">${tokenInitials}</div>
+              <div class="trend-fallback-avatar" style="${tokenGrad}">${tokenInitials}</div>
             `}
             <div class="trend-titles">
               <span class="trend-symbol">$${sym}</span>
