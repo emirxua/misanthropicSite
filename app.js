@@ -1166,10 +1166,60 @@ function switchTab(tabId) {
 }
 
 /* ==========================================================================
+   MINIMALIST FAST INTRO CONTROLLER
+   ========================================================================== */
+function initIntroGate() {
+  const gate = document.getElementById('introGate');
+  const enterBtn = document.getElementById('introEnterBtn');
+  const bar = document.getElementById('introProgressBar');
+  if (!gate) return;
+
+  let isDismissed = false;
+
+  function dismissIntro() {
+    if (isDismissed) return;
+    isDismissed = true;
+    gate.classList.add('dismissed');
+    setTimeout(() => {
+      gate.style.display = 'none';
+    }, 280);
+  }
+
+  // Fast auto-boot progress animation
+  if (bar) {
+    requestAnimationFrame(() => {
+      bar.style.width = '100%';
+    });
+    // Auto-enter smoothly after 1.2s if not manually clicked
+    setTimeout(() => {
+      dismissIntro();
+    }, 1200);
+  }
+
+  if (enterBtn) {
+    enterBtn.addEventListener('click', dismissIntro);
+  }
+
+  gate.addEventListener('click', (e) => {
+    if (e.target === gate || e.target.classList.contains('intro-backdrop')) {
+      dismissIntro();
+    }
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (!isDismissed && (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape')) {
+      e.preventDefault();
+      dismissIntro();
+    }
+  });
+}
+
+/* ==========================================================================
    INIT
    ========================================================================== */
 window.addEventListener('DOMContentLoaded', () => {
   initThemeEngine();
+  initIntroGate();
   setupEventListeners();
 
   // Initial polls
