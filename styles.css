@@ -141,10 +141,13 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 body {
   min-height: 100vh;
+  max-width: 100%;
   background-color: var(--bg-canvas);
   color: var(--text-primary);
   position: relative;
@@ -500,8 +503,8 @@ html.light .theme-icon-moon { display: inline-block; }
 
 .deck-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 380px;
-  gap: 20px;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 18px;
   align-items: start;
 }
 
@@ -656,8 +659,22 @@ html.light .theme-icon-moon { display: inline-block; }
    -------------------------------------------------------------------------- */
 .callouts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
+  width: 100%;
+  min-width: 0;
+}
+
+@media (min-width: 1720px) {
+  .callouts-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .callouts-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .callout-card {
@@ -693,6 +710,7 @@ html.light .theme-icon-moon { display: inline-block; }
   align-items: center;
   gap: 8px;
   min-width: 0;
+  flex: 1;
 }
 
 .caller-avatar, .caller-fallback-badge {
@@ -716,17 +734,19 @@ html.light .theme-icon-moon { display: inline-block; }
 .caller-name-wrap {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   min-width: 0;
+  flex: 1;
 }
 
-.caller-name {
+.caller-name, .caller-name-link {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  max-width: 130px;
 }
 
 .caller-x-link {
@@ -1045,15 +1065,15 @@ html.light .theme-icon-moon { display: inline-block; }
   color: var(--text-tertiary);
   background: var(--bg-surface-elevated);
   border: 1px solid var(--border-hairline);
-  padding: 5px 8px;
+  padding: 4px 7px;
   border-radius: 6px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 95px;
+  max-width: 82px;
   cursor: pointer;
   transition: all 0.15s ease;
-  flex-shrink: 1;
+  flex-shrink: 0;
 }
 
 .card-mint-btn:hover {
@@ -1064,43 +1084,43 @@ html.light .theme-icon-moon { display: inline-block; }
 .card-links-group {
   display: flex;
   align-items: center;
-  gap: 5px;
-  flex-wrap: wrap;
+  gap: 4px;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+}
+
+.card-btn-chart,
+.card-btn-dex,
+.card-btn-pump {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 7px;
+  border-radius: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 
 .card-btn-chart {
-  font-size: 10.5px;
-  font-weight: 700;
   color: var(--text-secondary);
   background: var(--bg-surface-elevated);
-  border: 1px solid var(--border-hairline);
-  padding: 5px 8px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  white-space: nowrap;
+  border: 1px solid var(--border-subtle);
 }
 
 .card-btn-chart:hover {
   background: var(--bg-surface-hover);
   color: var(--text-primary);
-  border-color: var(--border-subtle);
+  border-color: var(--text-secondary);
 }
 
 .card-btn-dex {
-  font-size: 10.5px;
-  font-weight: 700;
   color: #10b981;
   background: rgba(16, 185, 129, 0.08);
-  border: 1px solid rgba(16, 185, 129, 0.28);
-  padding: 5px 8px;
-  border-radius: 6px;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  white-space: nowrap;
-  display: inline-flex;
-  align-items: center;
+  border: 1px solid rgba(16, 185, 129, 0.25);
 }
 
 .card-btn-dex:hover {
@@ -1137,8 +1157,22 @@ html.light .theme-icon-moon { display: inline-block; }
    -------------------------------------------------------------------------- */
 .trending-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
+  width: 100%;
+  min-width: 0;
+}
+
+@media (min-width: 1720px) {
+  .trending-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .trending-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .trend-card {
@@ -1469,8 +1503,9 @@ html.light .theme-icon-moon { display: inline-block; }
    RIGHT / SIDEBAR DECK (SWAP & TOOLS)
    -------------------------------------------------------------------------- */
 .stage-sidebar {
-  width: 380px;
-  min-width: 380px;
+  width: 100%;
+  max-width: 350px;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -1607,6 +1642,11 @@ html.light .theme-icon-moon { display: inline-block; }
   display: flex;
   flex-direction: column;
   gap: 3px;
+  min-width: 0;
+}
+
+.radar-stat-cell.full-width {
+  grid-column: 1 / -1;
 }
 
 .r-lbl {
@@ -1618,7 +1658,7 @@ html.light .theme-icon-moon { display: inline-block; }
 }
 
 .r-val {
-  font-size: 13px;
+  font-size: 12.5px;
   font-family: "JetBrains Mono", monospace;
   font-weight: 700;
   color: var(--text-primary);
@@ -1631,7 +1671,35 @@ html.light .theme-icon-moon { display: inline-block; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 4px;
+  gap: 8px;
+  width: 100%;
+}
+
+.r-ca-row .r-val {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-inline-copy {
+  flex-shrink: 0;
+  background: var(--bg-surface-hover);
+  border: 1px solid var(--border-hairline);
+  color: var(--text-primary);
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-inline-copy:hover {
+  background: var(--accent-orange);
+  color: #ffffff;
+  border-color: var(--accent-orange);
 }
 
 /* Radar Chart Expand Button */
@@ -1977,6 +2045,12 @@ html.light .theme-icon-moon { display: inline-block; }
 /* --------------------------------------------------------------------------
    RESPONSIVE DESIGN BREAKPOINTS
    -------------------------------------------------------------------------- */
+@media (max-width: 1380px) {
+  .telem-quote-item {
+    display: none !important;
+  }
+}
+
 @media (max-width: 1060px) {
   .deck-grid {
     grid-template-columns: 1fr;
@@ -1984,7 +2058,8 @@ html.light .theme-icon-moon { display: inline-block; }
 
   .stage-sidebar {
     width: 100%;
-    min-width: 100%;
+    max-width: 100%;
+    min-width: 0;
     position: static;
   }
 
@@ -1999,6 +2074,12 @@ html.light .theme-icon-moon { display: inline-block; }
 
   .lore-btns {
     justify-content: center;
+  }
+}
+
+@media (max-width: 980px) {
+  .nav-center {
+    display: none !important;
   }
 }
 
@@ -2137,7 +2218,35 @@ html.light .theme-icon-moon { display: inline-block; }
   }
 
   .nav-center {
+    display: none !important;
+  }
+
+  .nav-right {
+    gap: 4px;
+  }
+
+  .btn-copy-ca {
+    padding: 4px 7px;
+    font-size: 10px;
+  }
+
+  .btn-copy-ca .copy-lbl {
     display: none;
+  }
+
+  .btn-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .telemetry-bar {
+    padding: 5px 8px;
+    font-size: 10px;
+  }
+
+  .ca-raw-text {
+    font-size: 9.5px;
+    padding: 6px 8px;
   }
 
   .brand-txt {
