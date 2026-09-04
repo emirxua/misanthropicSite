@@ -46,7 +46,6 @@ const state = {
    DOM ELEMENTS CACHE
    ========================================================================== */
 const dom = {
-  introSplash: document.getElementById('introSplash'),
   themeToggleBtn: document.getElementById('themeToggleBtn'),
 
   // Header Ticker
@@ -146,24 +145,6 @@ function initThemeEngine() {
   }
 }
 
-/* ==========================================================================
-   INTRO SPLASH SCREEN
-   ========================================================================== */
-function initIntroSplash() {
-  if (!dom.introSplash) return;
-  const dismiss = () => {
-    dom.introSplash.classList.add('dismissed');
-    setTimeout(() => {
-      if (dom.introSplash) dom.introSplash.style.display = 'none';
-    }, 450);
-  };
-
-  // Dismiss on click
-  dom.introSplash.addEventListener('click', dismiss);
-
-  // Auto-dismiss after 1.2 seconds
-  setTimeout(dismiss, 1200);
-}
 
 /* ==========================================================================
    FORMATTING & UTILITIES
@@ -930,7 +911,6 @@ function switchTab(tabId) {
    ========================================================================== */
 window.addEventListener('DOMContentLoaded', () => {
   initThemeEngine();
-  initIntroSplash();
   setupEventListeners();
 
   // Initial polls
