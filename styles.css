@@ -745,6 +745,72 @@ html.light .theme-icon-moon { display: inline-block; }
   flex-shrink: 0;
 }
 
+/* Live streaming badge on caller row */
+.badge-new-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(255, 92, 0, 0.12);
+  border: 1px solid var(--accent-orange);
+  color: var(--accent-orange);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.pulse-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent-orange);
+  box-shadow: 0 0 6px var(--accent-orange);
+  animation: liveDotPulse 1.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes liveDotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 6px var(--accent-orange); }
+  50% { opacity: 0.4; transform: scale(1.35); box-shadow: 0 0 10px var(--accent-orange); }
+}
+
+/* Dynamic price tick flash animations */
+@keyframes flashGreen {
+  0% { color: #10b981 !important; background-color: rgba(16, 185, 129, 0.22); text-shadow: 0 0 8px rgba(16, 185, 129, 0.6); }
+  100% { color: inherit; background-color: transparent; text-shadow: none; }
+}
+
+@keyframes flashRed {
+  0% { color: #ef4444 !important; background-color: rgba(239, 68, 68, 0.22); text-shadow: 0 0 8px rgba(239, 68, 68, 0.6); }
+  100% { color: inherit; background-color: transparent; text-shadow: none; }
+}
+
+.flash-green {
+  animation: flashGreen 1.1s ease-out;
+  border-radius: 3px;
+  padding: 0 2px;
+}
+
+.flash-red {
+  animation: flashRed 1.1s ease-out;
+  border-radius: 3px;
+  padding: 0 2px;
+}
+
+/* Live beacon for Tab badge */
+.live-dot-beacon {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
+  display: inline-block;
+  margin-right: 4px;
+  animation: liveDotPulse 1.6s ease-in-out infinite;
+}
+
 /* Token Banner (Linkable to DexScreener) */
 .card-token-banner {
   display: flex;

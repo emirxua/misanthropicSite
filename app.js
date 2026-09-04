@@ -12,9 +12,10 @@
 const MIS_CA = 'AWQSXRxiNUGLj9moJMFhq2axqwu6Dqerp16ftj4FjLyG';
 const MIS_PAIR_SLUG = 'bsjw4nhx3kyr5m3nl12rcpfmtybnba5ncmw2pazstevv';
 
-const STATS_INTERVAL_MS = 5_000;
-const CALLOUTS_INTERVAL_MS = 6_000;
-const TRENDING_INTERVAL_MS = 10_000;
+const STATS_INTERVAL_MS = 2_500;
+const CALLOUTS_INTERVAL_MS = 2_000;
+const DEX_SYNC_INTERVAL_MS = 2_500;
+const TRENDING_INTERVAL_MS = 5_000;
 
 /* ==========================================================================
    STATE
@@ -372,23 +373,32 @@ async function fetchTokenStats() {
 /* ==========================================================================
    2. REAL-TIME ALPHA CALLOUTS STREAM (ZERO MOCK DATA)
    ========================================================================== */
+let isFirstCalloutsLoad = true;
+let isSyncingDexPrices = false;
+
 async function fetchCallouts() {
   try {
     let rawCallouts = [];
+    const cacheBuster = `_t=${Date.now()}`;
 
-    // Local / Netlify proxy endpoint
+    // 1. Local / Vercel proxy endpoint with timestamp cache-buster
     try {
-      const res = await fetch('/api/callouts', { cache: 'no-store' });
+      const res = await fetch(`/api/callouts?${cacheBuster}`, {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+      });
       if (res.ok) {
         const data = await res.json();
         rawCallouts = data.callouts || [];
       }
     } catch {}
 
-    // Upstream fallback
+    // 2. Upstream fallback with cache-buster
     if (!rawCallouts || rawCallouts.length === 0) {
       try {
-        const res = await fetch('https://www.outbid.bond/api/callouts');
+        const res = await fetch(`https://www.outbid.bond/api/callouts?${cacheBuster}`, {
+          cache: 'no-store'
+        });
         if (res.ok) {
           const data = await res.json();
           rawCallouts = data.callouts || [];
@@ -398,21 +408,58 @@ async function fetchCallouts() {
 
     if (!rawCallouts || rawCallouts.length === 0) return;
 
-    // Detect new incoming calls
-    let hasNew = false;
-    rawCallouts.forEach((c) => {
-      const id = c.calloutId || c.coinMint;
-      if (id && !state.knownCalloutIds.has(id)) {
-        state.knownCalloutIds.add(id);
-        hasNew = true;
-      }
-    });
+    // Strictly sort by newest timestamp first (descending)
+    rawCallouts.sort((a, b) => (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0));
 
-    if (hasNew && state.callouts.length > 0) {
-      playSignalChime();
+    // Detect new incoming calls
+    const newlyArrived = [];
+    if (!isFirstCalloutsLoad) {
+      rawCallouts.forEach((c) => {
+        const id = c.calloutId || (c.coinMint + '_' + c.createdAt);
+        if (id && !state.knownCalloutIds.has(id)) {
+          c._isNewArrival = true;
+          newlyArrived.push(c);
+        }
+      });
     }
 
+    // Register all IDs
+    rawCallouts.forEach((c) => {
+      const id = c.calloutId || (c.coinMint + '_' + c.createdAt);
+      if (id) state.knownCalloutIds.add(id);
+    });
+
+    // Alert user if new signals arrived
+    if (newlyArrived.length > 0) {
+      playSignalChime();
+      const topNew = newlyArrived[0];
+      const caller = topNew.callerLabel || (topNew.callerXUsername ? '@' + topNew.callerXUsername : 'Caller');
+      const sym = (topNew.coinSymbol || 'TOKEN').toUpperCase();
+      showToast(`🚨 NEW SIGNAL: $${sym} by ${caller}`);
+    }
+
+    // Preserve previously synced live Dex prices so they don't revert
+    if (state.callouts && state.callouts.length > 0) {
+      const prevMap = new Map();
+      state.callouts.forEach((c) => {
+        if (c.coinMint) prevMap.set(c.coinMint, c);
+      });
+      rawCallouts.forEach((c) => {
+        const prev = prevMap.get(c.coinMint);
+        if (prev && prev._liveDexPrice) {
+          c._liveDexPrice = prev._liveDexPrice;
+          c._liveDexMcap = prev._liveDexMcap;
+          c._liveDexMult = prev._liveDexMult;
+        }
+      });
+    }
+
+    const previousCount = state.callouts.length;
+    const isCountChanged = previousCount !== rawCallouts.length;
+    const topMintChanged = state.callouts[0]?.coinMint !== rawCallouts[0]?.coinMint;
+
     state.callouts = rawCallouts;
+    isFirstCalloutsLoad = false;
 
     if (dom.heroSignalsCount) {
       dom.heroSignalsCount.textContent = `${state.callouts.length} Signals`;
@@ -420,7 +467,7 @@ async function fetchCallouts() {
 
     let maxMult = 0;
     state.callouts.forEach((c) => {
-      const mult = Number(c.multiplier || c.multiple || 1);
+      const mult = Number(c._liveDexMult || c.multiplier || c.multiple || 1);
       if (mult > maxMult) maxMult = mult;
     });
 
@@ -428,10 +475,131 @@ async function fetchCallouts() {
       dom.heroMaxMultVal.textContent = `${maxMult.toFixed(1)}x`;
     }
 
-    renderCalloutsGrid();
+    // Render grid if count changed, top call changed, or if grid is currently empty
+    if (isCountChanged || topMintChanged || !dom.calloutsGrid.hasChildNodes()) {
+      renderCalloutsGrid();
+    }
+
+    // Immediately trigger live DexScreener price sync for active cards
+    syncLiveDexPricesForCallouts();
 
   } catch (err) {
     console.warn('[Terminal] Callouts error:', err);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   LIVE DEXSCREENER PRICE SYNC FOR DISPLAYED CARDS
+   -------------------------------------------------------------------------- */
+async function syncLiveDexPricesForCallouts() {
+  if (isSyncingDexPrices) return;
+  if (!state.callouts || state.callouts.length === 0) return;
+
+  isSyncingDexPrices = true;
+  try {
+    const mints = [...new Set(state.callouts.slice(0, 18).map((c) => c.coinMint).filter(Boolean))];
+    if (mints.length === 0) return;
+
+    const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${mints.join(',')}`, {
+      cache: 'no-store'
+    });
+    if (!res.ok) return;
+
+    const data = await res.json();
+    const pairs = data.pairs || [];
+    if (pairs.length === 0) return;
+
+    // Pick pair with highest liquidity per mint
+    const pairMap = new Map();
+    pairs.forEach((p) => {
+      const mint = p.baseToken?.address;
+      if (!mint) return;
+      const current = pairMap.get(mint);
+      const liq = parseFloat(p.liquidity?.usd || 0);
+      if (!current || liq > parseFloat(current.liquidity?.usd || 0)) {
+        pairMap.set(mint, p);
+      }
+    });
+
+    // Update in-memory state and DOM elements directly (zero re-render flicker)
+    state.callouts.forEach((c) => {
+      const pair = pairMap.get(c.coinMint);
+      if (!pair) return;
+
+      const livePrice = parseFloat(pair.priceUsd || 0);
+      const liveMcap = parseFloat(pair.marketCap || pair.fdv || 0);
+      if (livePrice <= 0) return;
+
+      c._liveDexPrice = livePrice;
+      if (liveMcap > 0) {
+        c._liveDexMcap = liveMcap;
+        const entryMcap = Number(c.entryMcap || 0);
+        if (entryMcap > 0) {
+          c._liveDexMult = liveMcap / entryMcap;
+        }
+      }
+
+      updateCardDOM(c);
+    });
+
+  } catch (err) {
+    // Non-blocking
+  } finally {
+    isSyncingDexPrices = false;
+  }
+}
+
+function updateCardDOM(c) {
+  const card = document.querySelector(`.callout-card[data-mint="${c.coinMint}"]`);
+  if (!card) return;
+
+  const mult = Number(c._liveDexMult || c.multiplier || c.multiple || 1);
+  const multText = mult.toFixed(2) + 'x';
+  const multClass = mult >= 5.0 ? 'mult-super' : mult >= 1.0 ? 'mult-up' : 'mult-down';
+  const isGain = mult >= 1.0;
+  const entryMcap = Number(c.entryMcap || c.marketCap || 0);
+  const currMcap = Number(c._liveDexMcap || c.currentMcap || c.marketCap || 0);
+  const dexPrice = Number(c._liveDexPrice || c.currentPriceUsd || c.calloutPriceUsd || 0);
+
+  // 1. Update Multiplier Badge
+  const badgeEl = card.querySelector('.multiplier-badge');
+  if (badgeEl) {
+    badgeEl.textContent = multText;
+    badgeEl.className = `multiplier-badge ${multClass}`;
+  }
+
+  // 2. Update Gain/Loss Label
+  const labelEl = card.querySelector('.mult-label');
+  if (labelEl) {
+    labelEl.textContent = isGain ? 'GAIN' : 'LOSS';
+    labelEl.className = `mult-label ${isGain ? 'color-green' : 'color-red'}`;
+  }
+
+  // 3. Update DEX Price with tick animation
+  const priceValEl = card.querySelector('.stat-dex-price');
+  if (priceValEl && dexPrice > 0) {
+    const prevPrice = parseFloat(priceValEl.getAttribute('data-raw') || 0);
+    const newFormatted = fmtUSD(dexPrice);
+    if (prevPrice > 0 && Math.abs(dexPrice - prevPrice) > 1e-10) {
+      priceValEl.classList.remove('flash-green', 'flash-red');
+      void priceValEl.offsetWidth; // Force CSS reflow
+      priceValEl.classList.add(dexPrice >= prevPrice ? 'flash-green' : 'flash-red');
+    }
+    priceValEl.setAttribute('data-raw', dexPrice);
+    priceValEl.textContent = newFormatted;
+  }
+
+  // 4. Update Current Market Cap
+  const mcapValEl = card.querySelector('.stat-curr-mcap');
+  if (mcapValEl) {
+    mcapValEl.textContent = fmtMcap(currMcap);
+    mcapValEl.className = `value stat-curr-mcap ${currMcap >= entryMcap ? 'color-green' : 'color-red'}`;
+  }
+
+  // 5. Update Time Ago dynamically
+  const timeEl = card.querySelector('.callout-time');
+  if (timeEl && c.createdAt) {
+    timeEl.textContent = timeAgo(c.createdAt);
   }
 }
 
@@ -442,11 +610,11 @@ function renderCalloutsGrid() {
 
   // Filter chips
   if (state.calloutFilter === '2x') {
-    filtered = filtered.filter((c) => (c.multiplier || c.multiple || 1) >= 2.0);
+    filtered = filtered.filter((c) => (c._liveDexMult || c.multiplier || c.multiple || 1) >= 2.0);
   } else if (state.calloutFilter === '5x') {
-    filtered = filtered.filter((c) => (c.multiplier || c.multiple || 1) >= 5.0);
+    filtered = filtered.filter((c) => (c._liveDexMult || c.multiplier || c.multiple || 1) >= 5.0);
   } else if (state.calloutFilter === '10x') {
-    filtered = filtered.filter((c) => (c.multiplier || c.multiple || 1) >= 10.0);
+    filtered = filtered.filter((c) => (c._liveDexMult || c.multiplier || c.multiple || 1) >= 10.0);
   } else if (state.calloutFilter === 'recent') {
     const oneHourAgo = Date.now() - 60 * 60 * 1000;
     filtered = filtered.filter((c) => (c.createdAt || 0) >= oneHourAgo);
@@ -465,7 +633,7 @@ function renderCalloutsGrid() {
   }
 
   if (dom.calloutCountBadge) {
-    dom.calloutCountBadge.textContent = `${filtered.length}`;
+    dom.calloutCountBadge.innerHTML = `<span class="live-dot-beacon"></span>${filtered.length}`;
   }
 
   if (filtered.length === 0) {
@@ -476,19 +644,22 @@ function renderCalloutsGrid() {
 
   if (dom.calloutsEmpty) dom.calloutsEmpty.classList.add('hidden');
 
+  const now = Date.now();
   const html = filtered.map((c) => {
     const mint = c.coinMint || '';
     const sym = (c.coinSymbol || 'TOKEN').toUpperCase();
     const name = c.coinName || sym;
-    const mult = Number(c.multiplier || c.multiple || 1);
+    const mult = Number(c._liveDexMult || c.multiplier || c.multiple || 1);
     const multText = mult.toFixed(2) + 'x';
     const multClass = mult >= 5.0 ? 'mult-super' : mult >= 1.0 ? 'mult-up' : 'mult-down';
     const isGain = mult >= 1.0;
 
     const entryMcap = Number(c.entryMcap || c.marketCap || 0);
-    const currMcap = Number(c.currentMcap || c.marketCap || 0);
-    const dexPrice = Number(c.currentPriceUsd || c.calloutPriceUsd || c.priceUsd || 0);
+    const currMcap = Number(c._liveDexMcap || c.currentMcap || c.marketCap || 0);
+    const dexPrice = Number(c._liveDexPrice || c.currentPriceUsd || c.calloutPriceUsd || c.priceUsd || 0);
     const dexPriceFormatted = dexPrice > 0 ? fmtUSD(dexPrice) : '—';
+
+    const isFresh = c._isNewArrival || (c.createdAt && (now - c.createdAt) < 300000); // 5 mins fresh
 
     const callerName = c.callerLabel || (c.callerXUsername ? '@' + c.callerXUsername : fmtShortAddr(c.callerWallet));
     const callerInitial = (callerName.replace('@', '')[0] || 'A').toUpperCase();
@@ -520,6 +691,7 @@ function renderCalloutsGrid() {
               ` : `
                 <span class="caller-name">${callerName}</span>
               `}
+              ${isFresh ? `<span class="badge-new-live"><span class="pulse-dot"></span> LIVE</span>` : ''}
             </div>
           </div>
           <span class="callout-time">${timeAgo(c.createdAt)}</span>
@@ -554,7 +726,7 @@ function renderCalloutsGrid() {
         <div class="callout-stats-row">
           <div class="stat-item">
             <span class="label">DEX PRICE</span>
-            <span class="value font-mono">${dexPriceFormatted}</span>
+            <span class="value font-mono stat-dex-price" data-raw="${dexPrice}">${dexPriceFormatted}</span>
           </div>
           <div class="stat-item">
             <span class="label">ENTRY MCAP</span>
@@ -562,7 +734,7 @@ function renderCalloutsGrid() {
           </div>
           <div class="stat-item">
             <span class="label">CURRENT MCAP</span>
-            <span class="value ${currMcap >= entryMcap ? 'color-green' : 'color-red'}">${fmtMcap(currMcap)}</span>
+            <span class="value stat-curr-mcap ${currMcap >= entryMcap ? 'color-green' : 'color-red'}">${fmtMcap(currMcap)}</span>
           </div>
         </div>
 
@@ -1008,6 +1180,7 @@ window.addEventListener('DOMContentLoaded', () => {
   // Background polling intervals
   setInterval(fetchTokenStats, STATS_INTERVAL_MS);
   setInterval(fetchCallouts, CALLOUTS_INTERVAL_MS);
+  setInterval(syncLiveDexPricesForCallouts, DEX_SYNC_INTERVAL_MS);
   setInterval(fetchTrending, TRENDING_INTERVAL_MS);
 });
 

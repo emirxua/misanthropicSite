@@ -30,6 +30,18 @@ class MisanthropicHandler(http.server.SimpleHTTPRequestHandler):
         self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
         super().end_headers()
 
+    def do_HEAD(self):
+        parsed = urlparse(self.path)
+        path = parsed.path
+        if path in ("/api/callouts", "/api/trending", "/api/coins", "/api/token-stats", "/api/health"):
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+            self.end_headers()
+        else:
+            super().do_HEAD()
+
     def do_OPTIONS(self):
         self.send_response(204)
         self.end_headers()
@@ -78,12 +90,19 @@ class MisanthropicHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
 
     def send_json(self, data, status=200):
-        body = json.dumps(data).encode("utf-8")
-        self.send_response(status)
-        self.send_header("Content-Type", "application/json")
-        self.send_header("Content-Length", str(len(body)))
-        self.end_headers()
-        self.wfile.write(body)
+        try:
+            body = json.dumps(data).encode("utf-8")
+            self.send_response(status)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+            self.send_header("Pragma", "no-cache")
+            self.send_header("Expires", "0")
+            self.end_headers()
+            self.wfile.write(body)
+        except (BrokenPipeError, ConnectionResetError):
+            pass
 
     def handle_callouts(self):
         try:
@@ -105,7 +124,6 @@ class MisanthropicHandler(http.server.SimpleHTTPRequestHandler):
                     data = json.loads(resp2.read().decode("utf-8"))
                     self.send_json(data)
             except Exception as e2:
-                print(f"[ERROR] /api/callouts upstream failed: {e2}", file=sys.stderr)
                 self.send_json({"success": False, "callouts": [], "error": str(e2)})
 
     def handle_trending(self):
