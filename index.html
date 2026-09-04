@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>$MISANTHROPIC — Pro Solana Alpha Terminal</title>
-  <meta name="description" content="Next-Gen Solana & Pump.fun Alpha Terminal. Real-time Native Callouts, Live Trending Trenches, Instant Jupiter Swap. $MISANTHROPIC (CA: AWQSXRxiNUGLj9moJMFhq2axqwu6Dqerp16ftj4FjLyG).">
+  <meta name="description" content="Next-Gen Solana & Pump.fun Alpha Terminal. Real-time Native Callouts, Live Trending Trenches, On-Chain Surveillance Radar. $MISANTHROPIC (CA: AWQSXRxiNUGLj9moJMFhq2axqwu6Dqerp16ftj4FjLyG).">
   <link rel="icon" href="assets/flower.png" type="image/png">
   <link rel="canonical" href="https://getmisanthropic.xyz">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -43,7 +43,7 @@
       
       <!-- Brand Link -->
       <div class="nav-left">
-        <a href="#terminal" class="brand-badge-link">
+        <a href="#terminal" class="brand-badge-link" id="brandHomeBtn" title="Reset to Alpha Callouts (All)">
           <div class="logo-box">
             <img src="assets/flower.png" alt="Misanthropic Logo" width="28" height="28" class="logo-flower">
             <span class="status-dot-pulse"></span>
@@ -324,87 +324,72 @@
       <!-- =============================================================== -->
       <aside class="stage-sidebar">
         
-        <!-- CARD 1: TERMINAL SWAP (JUPITER DEX) -->
-        <div class="sidebar-box swap-box">
+        <!-- CARD 1: ON-CHAIN SURVEILLANCE RADAR (MONITORING ONLY) -->
+        <div class="sidebar-box radar-box" id="sidebarRadar">
           <div class="box-head">
             <div class="box-title">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>
-              <span>TERMINAL SWAP</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 9 9"/><path d="M12 12l5 -3"/><circle cx="12" cy="12" r="2"/></svg>
+              <span>TOKEN RADAR</span>
             </div>
-            <span class="dex-pill">JUPITER</span>
+            <span class="dex-pill">SURVEILLANCE</span>
           </div>
 
-          <!-- Quick SOL Presets -->
-          <div class="quick-presets">
-            <span class="presets-txt">QUICK:</span>
-            <button type="button" class="preset-chip" data-sol="0.1">0.1</button>
-            <button type="button" class="preset-chip active" data-sol="0.5">0.5</button>
-            <button type="button" class="preset-chip" data-sol="1.0">1.0</button>
-            <button type="button" class="preset-chip" data-sol="2.5">2.5</button>
-            <button type="button" class="preset-chip" data-sol="5.0">5.0 SOL</button>
+          <!-- Active Monitored Token -->
+          <div class="radar-token-header">
+            <div class="radar-token-meta">
+              <img src="assets/flower.png" alt="Token Logo" width="34" height="34" id="radarTargetImg" class="radar-avatar">
+              <div class="radar-token-titles">
+                <div class="radar-token-sym-row">
+                  <span class="radar-sym" id="radarTargetSymbol">$MIS</span>
+                  <span class="radar-net-pill">SOLANA</span>
+                </div>
+                <span class="radar-name" id="radarTargetName">Misanthropic</span>
+              </div>
+            </div>
+            <span class="radar-live-badge" id="radarLiveBadge">MONITORING</span>
           </div>
 
-          <!-- Input: Pay SOL -->
-          <div class="input-card">
-            <div class="input-top-line">
-              <span>YOU PAY</span>
-              <span>SOLANA</span>
+          <!-- Live On-Chain Telemetry Grid -->
+          <div class="radar-stats-grid">
+            <div class="radar-stat-cell">
+              <span class="r-lbl">REAL-TIME PRICE</span>
+              <span class="r-val" id="radarPrice">—</span>
             </div>
-            <div class="input-main-line">
-              <input type="number" id="swapFromAmount" value="0.5" step="0.05" min="0.01">
-              <div class="coin-tag">
-                <img src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png" alt="SOL" width="16" height="16">
-                <span>SOL</span>
+            <div class="radar-stat-cell">
+              <span class="r-lbl">24H CHANGE</span>
+              <span class="r-val change-neutral" id="radarChange">—</span>
+            </div>
+            <div class="radar-stat-cell">
+              <span class="r-lbl">MARKET CAP</span>
+              <span class="r-val" id="radarMcap">—</span>
+            </div>
+            <div class="radar-stat-cell">
+              <span class="r-lbl">24H VOLUME</span>
+              <span class="r-val" id="radarVol">—</span>
+            </div>
+            <div class="radar-stat-cell">
+              <span class="r-lbl">LIQUIDITY</span>
+              <span class="r-val color-green" id="radarLiq">—</span>
+            </div>
+            <div class="radar-stat-cell">
+              <span class="r-lbl">CONTRACT (MINT)</span>
+              <div class="r-ca-row">
+                <span class="r-val font-mono" id="radarTargetCa">AWQS...LyG</span>
+                <button type="button" id="copyRadarCaBtn" class="btn-inline-copy">COPY</button>
               </div>
             </div>
           </div>
 
-          <!-- Divider arrow -->
-          <div class="swap-arrow-row">
-            <div class="arrow-circle">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
-            </div>
-          </div>
+          <!-- Observation Tools: Chart & Direct Explorers -->
+          <button type="button" id="radarOpenChartBtn" class="btn-radar-chart" title="View DexScreener Live Candle Chart">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+            <span>EXPAND LIVE CANDLE CHART</span>
+          </button>
 
-          <!-- Input: Receive Token -->
-          <div class="input-card">
-            <div class="input-top-line">
-              <span>YOU RECEIVE (EST.)</span>
-              <span id="targetTokenRate">1 SOL ≈ — $MIS</span>
-            </div>
-            <div class="input-main-line">
-              <input type="text" id="swapToAmount" value="—" readonly>
-              <div class="coin-tag active-coin" id="swapTargetPill">
-                <img src="assets/flower.png" alt="Token" width="16" height="16" id="swapTargetImg">
-                <span id="swapTargetSymbol">$MIS</span>
-              </div>
-            </div>
-            <div class="ca-mini-footer">
-              <span>CA: <code id="swapTargetCa">AWQS...LyG</code></span>
-              <button type="button" id="copySwapCaBtn" class="btn-inline-copy">COPY</button>
-            </div>
-          </div>
-
-          <!-- Slippage settings -->
-          <div class="slippage-line">
-            <span>Slippage:</span>
-            <div class="slip-chips-row">
-              <button type="button" class="slip-chip" data-slip="0.5">0.5%</button>
-              <button type="button" class="slip-chip active" data-slip="1.0">1.0%</button>
-              <button type="button" class="slip-chip" data-slip="2.5">2.5%</button>
-              <button type="button" class="slip-chip" data-slip="5.0">Turbo</button>
-            </div>
-          </div>
-
-          <!-- Swap CTA -->
-          <a href="https://jup.ag/swap/SOL-AWQSXRxiNUGLj9moJMFhq2axqwu6Dqerp16ftj4FjLyG" id="jupiterDirectLink" target="_blank" rel="noopener noreferrer" class="btn-swap-execute">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>
-            <span>SWAP ON JUPITER</span>
-          </a>
-
-          <div class="swap-sub-links">
-            <a href="https://pump.fun/coin/AWQSXRxiNUGLj9moJMFhq2axqwu6Dqerp16ftj4FjLyG" target="_blank" rel="noopener noreferrer">Pump.fun →</a>
-            <a href="https://dexscreener.com/solana/bsjw4nhx3kyr5m3nl12rcpfmtybnba5ncmw2pazstevv" target="_blank" rel="noopener noreferrer">DexScreener →</a>
+          <div class="radar-sub-links">
+            <a href="https://dexscreener.com/solana/bsjw4nhx3kyr5m3nl12rcpfmtybnba5ncmw2pazstevv" id="radarDexLink" target="_blank" rel="noopener noreferrer">DexScreener ↗</a>
+            <a href="https://solscan.io/token/AWQSXRxiNUGLj9moJMFhq2axqwu6Dqerp16ftj4FjLyG" id="radarSolscanLink" target="_blank" rel="noopener noreferrer">Solscan ↗</a>
+            <a href="https://pump.fun/coin/AWQSXRxiNUGLj9moJMFhq2axqwu6Dqerp16ftj4FjLyG" id="radarPumpLink" target="_blank" rel="noopener noreferrer">Pump.fun ↗</a>
           </div>
         </div>
 
@@ -453,9 +438,9 @@
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
       <span>Trending</span>
     </button>
-    <button type="button" class="dock-btn" onclick="scrollToSidebarSwap()">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>
-      <span class="color-gold">Swap</span>
+    <button type="button" class="dock-btn" onclick="scrollToSidebarRadar()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 9 9"/><path d="M12 12l5 -3"/><circle cx="12" cy="12" r="2"/></svg>
+      <span class="color-gold">Radar</span>
     </button>
     <button type="button" class="dock-btn" data-tab="tab-lore">
       <span class="flower-emoji">🌸</span>

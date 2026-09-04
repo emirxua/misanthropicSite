@@ -25,10 +25,17 @@ const state = {
   misPriceUsd: 0.00001219,
   solPriceUsd: 135.0,
 
-  // Current swap target
-  targetSwapMint: MIS_CA,
-  targetSwapSymbol: '$MIS',
-  targetSwapImg: 'assets/flower.png',
+  // Active Surveillance Radar target
+  radarMint: MIS_CA,
+  radarSymbol: '$MIS',
+  radarName: 'Misanthropic',
+  radarImg: 'assets/flower.png',
+  radarPrice: '—',
+  radarChange: '—',
+  radarChangeCls: 'change-neutral',
+  radarMcap: '—',
+  radarVol: '—',
+  radarLiq: '100% Burned',
 
   // Live callouts
   callouts: [],
@@ -46,6 +53,7 @@ const state = {
    DOM ELEMENTS CACHE
    ========================================================================== */
 const dom = {
+  brandHomeBtn: document.getElementById('brandHomeBtn'),
   themeToggleBtn: document.getElementById('themeToggleBtn'),
 
   // Header Ticker
@@ -80,17 +88,22 @@ const dom = {
   trendingFilters: document.getElementById('trendingFilters'),
   trendingSearchInput: document.getElementById('trendingSearchInput'),
 
-  // Swap Sidebar
-  swapFromAmount: document.getElementById('swapFromAmount'),
-  swapToAmount: document.getElementById('swapToAmount'),
-  swapTargetSymbol: document.getElementById('swapTargetSymbol'),
-  swapTargetImg: document.getElementById('swapTargetImg'),
-  swapTargetCa: document.getElementById('swapTargetCa'),
-  copySwapCaBtn: document.getElementById('copySwapCaBtn'),
-  targetTokenRate: document.getElementById('targetTokenRate'),
-  jupiterDirectLink: document.getElementById('jupiterDirectLink'),
-  presetChips: document.querySelectorAll('.preset-chip'),
-  slipChips: document.querySelectorAll('.slip-chip'),
+  // Radar Sidebar (Pure Observation)
+  sidebarRadar: document.getElementById('sidebarRadar'),
+  radarTargetImg: document.getElementById('radarTargetImg'),
+  radarTargetSymbol: document.getElementById('radarTargetSymbol'),
+  radarTargetName: document.getElementById('radarTargetName'),
+  radarTargetCa: document.getElementById('radarTargetCa'),
+  copyRadarCaBtn: document.getElementById('copyRadarCaBtn'),
+  radarPrice: document.getElementById('radarPrice'),
+  radarChange: document.getElementById('radarChange'),
+  radarMcap: document.getElementById('radarMcap'),
+  radarVol: document.getElementById('radarVol'),
+  radarLiq: document.getElementById('radarLiq'),
+  radarOpenChartBtn: document.getElementById('radarOpenChartBtn'),
+  radarDexLink: document.getElementById('radarDexLink'),
+  radarSolscanLink: document.getElementById('radarSolscanLink'),
+  radarPumpLink: document.getElementById('radarPumpLink'),
 
   // Modal & Toast
   chartModal: document.getElementById('chartModal'),
@@ -322,7 +335,15 @@ async function fetchTokenStats() {
       if (dom.tickerVol) dom.tickerVol.textContent = fmtUSD(pairData.volume24h);
       if (dom.heroLiqVal) dom.heroLiqVal.textContent = fmtMcap(pairData.liquidityUsd || 11600);
 
-      updateSwapCalculations();
+      if (state.radarMint === MIS_CA) {
+        state.radarPrice = fmtUSD(pairData.priceUsd);
+        state.radarChange = chg.text;
+        state.radarChangeCls = chg.cls;
+        state.radarMcap = fmtMcap(pairData.marketCap);
+        state.radarVol = fmtUSD(pairData.volume24h);
+        state.radarLiq = pairData.liquidityUsd ? `${fmtMcap(pairData.liquidityUsd)} (100% Burned)` : '100% Burned';
+        updateRadarDOM();
+      }
     }
   } catch (err) {
     console.warn('[Terminal] Stats error:', err);
@@ -524,11 +545,11 @@ function renderCalloutsGrid() {
           </button>
 
           <div class="card-links-group">
-            <button type="button" class="card-btn-chart" onclick="openChartModal('${mint}', '${sym}')">
+            <button type="button" class="card-btn-chart" onclick="openChartModal('${mint}', '${sym}')" title="Open live chart">
               Chart
             </button>
-            <button type="button" class="card-btn-swap" onclick="selectTokenForSwap('${mint}', '${sym}', '${coinImg}')">
-              ⚡ Swap
+            <button type="button" class="card-btn-inspect" onclick="inspectTokenRadar('${mint}', '${sym}', '${coinImg}', '${name.replace(/'/g, "\\'")}')" title="Lock into Radar">
+              Radar
             </button>
           </div>
         </div>
@@ -667,11 +688,11 @@ function renderTrendingGrid() {
             <span>Copy CA</span>
           </button>
           <div class="card-links-group">
-            <button type="button" class="card-btn-chart" onclick="openChartModal('${mint}', '${sym}')">
+            <button type="button" class="card-btn-chart" onclick="openChartModal('${mint}', '${sym}')" title="Open live chart">
               Chart
             </button>
-            <button type="button" class="card-btn-swap" onclick="selectTokenForSwap('${mint}', '${sym}', '${img}')">
-              ⚡ Swap
+            <button type="button" class="card-btn-inspect" onclick="inspectTokenRadar('${mint}', '${sym}', '${img}', '${name.replace(/'/g, "\\'")}', '${price}', '${chg.text}', '${chg.cls}', '${mcap}', '${vol}')" title="Lock into Radar">
+              Radar
             </button>
           </div>
         </div>
@@ -683,59 +704,83 @@ function renderTrendingGrid() {
 }
 
 /* ==========================================================================
-   4. SIDEBAR SWAP CALCULATIONS & SELECTION
+   4. SIDEBAR RADAR SURVEILLANCE (OBSERVATION TERMINAL ENGINE)
    ========================================================================== */
-function updateSwapCalculations() {
-  if (!dom.swapFromAmount || !dom.swapToAmount) return;
-
-  const solAmt = parseFloat(dom.swapFromAmount.value) || 0;
-  if (solAmt <= 0) {
-    dom.swapToAmount.value = '0';
-    return;
+function updateRadarDOM() {
+  if (dom.radarTargetImg) dom.radarTargetImg.src = state.radarImg || 'assets/flower.png';
+  if (dom.radarTargetSymbol) dom.radarTargetSymbol.textContent = state.radarSymbol;
+  if (dom.radarTargetName) dom.radarTargetName.textContent = state.radarName;
+  if (dom.radarTargetCa) dom.radarTargetCa.textContent = fmtShortAddr(state.radarMint);
+  if (dom.radarPrice) dom.radarPrice.textContent = state.radarPrice;
+  if (dom.radarChange) {
+    dom.radarChange.textContent = state.radarChange;
+    dom.radarChange.className = `r-val ${state.radarChangeCls}`;
   }
+  if (dom.radarMcap) dom.radarMcap.textContent = state.radarMcap;
+  if (dom.radarVol) dom.radarVol.textContent = state.radarVol;
+  if (dom.radarLiq) dom.radarLiq.textContent = state.radarLiq;
 
-  // Value in USD
-  const totalUsd = solAmt * state.solPriceUsd;
-
-  if (state.targetSwapMint === MIS_CA) {
-    const tokenPrice = state.misPriceUsd > 0 ? state.misPriceUsd : 0.00001219;
-    const tokenTokens = totalUsd / tokenPrice;
-    dom.swapToAmount.value = (tokenTokens / 1e6).toFixed(2) + 'M';
-    if (dom.targetTokenRate) {
-      const rate = Math.round(state.solPriceUsd / tokenPrice);
-      dom.targetTokenRate.textContent = `1 SOL ≈ ${(rate / 1e6).toFixed(2)}M $MIS`;
-    }
-  } else {
-    // For other selected tokens
-    dom.swapToAmount.value = `≈ $${totalUsd.toFixed(2)}`;
-    if (dom.targetTokenRate) {
-      dom.targetTokenRate.textContent = `1 SOL ≈ $${state.solPriceUsd.toFixed(2)}`;
-    }
+  if (dom.radarDexLink) {
+    dom.radarDexLink.href = `https://dexscreener.com/solana/${state.radarMint}`;
+  }
+  if (dom.radarSolscanLink) {
+    dom.radarSolscanLink.href = `https://solscan.io/token/${state.radarMint}`;
+  }
+  if (dom.radarPumpLink) {
+    dom.radarPumpLink.href = `https://pump.fun/coin/${state.radarMint}`;
   }
 }
 
-function selectTokenForSwap(mint, symbol, imgUrl) {
-  state.targetSwapMint = mint;
-  state.targetSwapSymbol = '$' + symbol.replace('$', '');
-  state.targetSwapImg = imgUrl || 'assets/flower.png';
+async function inspectTokenRadar(mint, symbol, imgUrl, name, price, chgText, chgCls, mcap, vol) {
+  state.radarMint = mint;
+  state.radarSymbol = '$' + symbol.replace('$', '');
+  state.radarName = name || symbol;
+  state.radarImg = imgUrl || 'assets/flower.png';
+  state.radarPrice = price || '—';
+  state.radarChange = chgText || '—';
+  state.radarChangeCls = chgCls || 'change-neutral';
+  state.radarMcap = mcap || '—';
+  state.radarVol = vol || '—';
+  state.radarLiq = (mint === MIS_CA) ? '100% Burned' : 'On-Chain';
 
-  if (dom.swapTargetSymbol) dom.swapTargetSymbol.textContent = state.targetSwapSymbol;
-  if (dom.swapTargetCa) dom.swapTargetCa.textContent = fmtShortAddr(mint);
-  if (dom.jupiterDirectLink) {
-    dom.jupiterDirectLink.href = `https://jup.ag/swap/SOL-${mint}`;
+  updateRadarDOM();
+  showToast(`⚡ Radar locked: ${state.radarSymbol}`);
+
+  // Fetch full live pair metrics in background if missing
+  if (!price || price === '—') {
+    fetchTokenRadarDetails(mint);
   }
 
-  updateSwapCalculations();
-  showToast(`⚡ Swap target set to ${state.targetSwapSymbol}`);
-
-  // On mobile, scroll to sidebar
+  // Scroll to radar on mobile
   if (window.innerWidth <= 1060) {
-    scrollToSidebarSwap();
+    scrollToSidebarRadar();
   }
 }
 
-function scrollToSidebarSwap() {
-  const sidebar = document.querySelector('.stage-sidebar');
+async function fetchTokenRadarDetails(mint) {
+  try {
+    const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${mint}`);
+    if (res.ok) {
+      const json = await res.json();
+      const p = (json.pairs || [])[0];
+      if (p && state.radarMint === mint) {
+        state.radarPrice = fmtUSD(p.priceUsd);
+        const chg = fmtPercent(p.priceChange?.h24 || 0);
+        state.radarChange = chg.text;
+        state.radarChangeCls = chg.cls;
+        state.radarMcap = fmtMcap(p.marketCap || p.fdv || 0);
+        state.radarVol = fmtUSD(p.volume?.h24 || 0);
+        state.radarLiq = p.liquidity?.usd ? fmtMcap(p.liquidity.usd) : 'On-Chain';
+        updateRadarDOM();
+      }
+    }
+  } catch (err) {
+    console.warn('[Radar] Details fetch error:', err);
+  }
+}
+
+function scrollToSidebarRadar() {
+  const sidebar = document.getElementById('sidebarRadar') || document.querySelector('.stage-sidebar');
   if (sidebar) {
     sidebar.scrollIntoView({ behavior: 'smooth' });
   }
@@ -768,13 +813,32 @@ function closeChartModal() {
    6. EVENT LISTENERS SETUP
    ========================================================================== */
 function setupEventListeners() {
+  // Brand Logo Home Button: Clicking top-left opens Alpha Callouts (All filter) and scrolls to top
+  const brandBtn = dom.brandHomeBtn || document.querySelector('.brand-badge-link');
+  if (brandBtn) {
+    brandBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      switchTab('tab-callouts');
+      resetCalloutFilters();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      showToast('⚡ Alpha Callouts: Showing All');
+    });
+  }
+
   // CA copy buttons
   if (dom.headerCopyBtn) {
     dom.headerCopyBtn.addEventListener('click', copyMainCA);
   }
-  if (dom.copySwapCaBtn) {
-    dom.copySwapCaBtn.addEventListener('click', () => {
-      copyToClipboard(state.targetSwapMint, `${state.targetSwapSymbol} Mint`);
+  if (dom.copyRadarCaBtn) {
+    dom.copyRadarCaBtn.addEventListener('click', () => {
+      copyToClipboard(state.radarMint, `${state.radarSymbol} Contract`);
+    });
+  }
+
+  // Radar Open Live Chart button
+  if (dom.radarOpenChartBtn) {
+    dom.radarOpenChartBtn.addEventListener('click', () => {
+      openChartModal(state.radarMint, state.radarSymbol);
     });
   }
 
@@ -859,36 +923,6 @@ function setupEventListeners() {
     });
   }
 
-  // Swap input calculation
-  if (dom.swapFromAmount) {
-    dom.swapFromAmount.addEventListener('input', updateSwapCalculations);
-  }
-
-  // Presets
-  dom.presetChips.forEach((chip) => {
-    chip.addEventListener('click', () => {
-      dom.presetChips.forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      const val = chip.getAttribute('data-sol');
-      if (val && dom.swapFromAmount) {
-        dom.swapFromAmount.value = parseFloat(val);
-        updateSwapCalculations();
-      }
-    });
-  });
-
-  // Slippage
-  dom.slipChips.forEach((chip) => {
-    chip.addEventListener('click', () => {
-      dom.slipChips.forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      const slip = chip.getAttribute('data-slip');
-      if (dom.jupiterDirectLink) {
-        dom.jupiterDirectLink.href = `https://jup.ag/swap/SOL-${state.targetSwapMint}?slippageBps=${parseFloat(slip) * 100}`;
-      }
-    });
-  });
-
   // Escape key closes modal
   window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeChartModal();
@@ -905,6 +939,12 @@ function switchTab(tabId) {
   dom.panes.forEach((p) => {
     p.classList.toggle('active', p.id === tabId);
   });
+
+  if (dom.dockButtons) {
+    dom.dockButtons.forEach((b) => {
+      b.classList.toggle('active', b.getAttribute('data-tab') === tabId);
+    });
+  }
 
   if (tabId === 'tab-lore' && typeof window.handleGameResize === 'function') {
     requestAnimationFrame(() => window.handleGameResize());
@@ -934,8 +974,9 @@ window.copyMainCA = copyMainCA;
 window.copyToClipboard = copyToClipboard;
 window.openChartModal = openChartModal;
 window.closeChartModal = closeChartModal;
-window.selectTokenForSwap = selectTokenForSwap;
+window.inspectTokenRadar = inspectTokenRadar;
 window.resetCalloutFilters = resetCalloutFilters;
 window.scrollToGame = scrollToGame;
-window.scrollToSidebarSwap = scrollToSidebarSwap;
+window.scrollToSidebarRadar = scrollToSidebarRadar;
+window.switchTab = switchTab;
 
