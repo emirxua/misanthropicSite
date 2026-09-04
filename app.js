@@ -376,6 +376,34 @@ async function fetchTokenStats() {
 let isFirstCalloutsLoad = true;
 let isSyncingDexPrices = false;
 
+function getCalloutTimestamp(c) {
+  if (!c) return 0;
+  const t = c.createdAt || c.timestamp || c.date;
+  if (typeof t === 'number') return t;
+  if (typeof t === 'string') {
+    const n = Number(t);
+    if (!isNaN(n) && n > 0) return n;
+    const p = Date.parse(t);
+    if (!isNaN(p) && p > 0) return p;
+  }
+  return 0;
+}
+
+function sortCalloutsNewestFirst(list) {
+  return [...list].sort((a, b) => getCalloutTimestamp(b) - getCalloutTimestamp(a));
+}
+
+function updateLiveTimestamps() {
+  const cards = document.querySelectorAll('.callout-card');
+  cards.forEach((card) => {
+    const timeEl = card.querySelector('.callout-time');
+    const created = Number(card.getAttribute('data-created') || 0);
+    if (timeEl && created > 0) {
+      timeEl.textContent = timeAgo(created);
+    }
+  });
+}
+
 async function fetchCallouts() {
   try {
     let rawCallouts = [];
@@ -408,25 +436,20 @@ async function fetchCallouts() {
 
     if (!rawCallouts || rawCallouts.length === 0) return;
 
-    // Strictly sort by newest timestamp first (descending)
-    rawCallouts.sort((a, b) => (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0));
+    // Strictly sort newest first
+    rawCallouts = sortCalloutsNewestFirst(rawCallouts);
 
     // Detect new incoming calls
     const newlyArrived = [];
-    if (!isFirstCalloutsLoad) {
-      rawCallouts.forEach((c) => {
-        const id = c.calloutId || (c.coinMint + '_' + c.createdAt);
-        if (id && !state.knownCalloutIds.has(id)) {
+    rawCallouts.forEach((c) => {
+      const id = c.calloutId || (c.coinMint + '_' + (c.createdAt || ''));
+      if (id && !state.knownCalloutIds.has(id)) {
+        if (!isFirstCalloutsLoad) {
           c._isNewArrival = true;
           newlyArrived.push(c);
         }
-      });
-    }
-
-    // Register all IDs
-    rawCallouts.forEach((c) => {
-      const id = c.calloutId || (c.coinMint + '_' + c.createdAt);
-      if (id) state.knownCalloutIds.add(id);
+        state.knownCalloutIds.add(id);
+      }
     });
 
     // Alert user if new signals arrived
@@ -454,9 +477,10 @@ async function fetchCallouts() {
       });
     }
 
-    const previousCount = state.callouts.length;
-    const isCountChanged = previousCount !== rawCallouts.length;
-    const topMintChanged = state.callouts[0]?.coinMint !== rawCallouts[0]?.coinMint;
+    const prevTopKey = state.callouts[0]?.calloutId || (state.callouts[0]?.coinMint + '_' + state.callouts[0]?.createdAt);
+    const newTopKey = rawCallouts[0]?.calloutId || (rawCallouts[0]?.coinMint + '_' + rawCallouts[0]?.createdAt);
+    const countChanged = state.callouts.length !== rawCallouts.length;
+    const topChanged = prevTopKey !== newTopKey;
 
     state.callouts = rawCallouts;
     isFirstCalloutsLoad = false;
@@ -475,8 +499,8 @@ async function fetchCallouts() {
       dom.heroMaxMultVal.textContent = `${maxMult.toFixed(1)}x`;
     }
 
-    // Render grid if count changed, top call changed, or if grid is currently empty
-    if (isCountChanged || topMintChanged || !dom.calloutsGrid.hasChildNodes()) {
+    // Re-render grid if top callout changed, count changed, new arrivals exist, or empty
+    if (topChanged || countChanged || newlyArrived.length > 0 || !dom.calloutsGrid.hasChildNodes()) {
       renderCalloutsGrid();
     }
 
@@ -497,7 +521,7 @@ async function syncLiveDexPricesForCallouts() {
 
   isSyncingDexPrices = true;
   try {
-    const mints = [...new Set(state.callouts.slice(0, 18).map((c) => c.coinMint).filter(Boolean))];
+    const mints = [...new Set(state.callouts.slice(0, 20).map((c) => c.coinMint).filter(Boolean))];
     if (mints.length === 0) return;
 
     const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${mints.join(',')}`, {
@@ -521,7 +545,7 @@ async function syncLiveDexPricesForCallouts() {
       }
     });
 
-    // Update in-memory state and DOM elements directly (zero re-render flicker)
+    // Update in-memory state and DOM elements directly
     state.callouts.forEach((c) => {
       const pair = pairMap.get(c.coinMint);
       if (!pair) return;
@@ -539,7 +563,7 @@ async function syncLiveDexPricesForCallouts() {
         }
       }
 
-      updateCardDOM(c);
+      updateAllCardsForToken(c.coinMint, livePrice, liveMcap);
     });
 
   } catch (err) {
@@ -549,64 +573,65 @@ async function syncLiveDexPricesForCallouts() {
   }
 }
 
-function updateCardDOM(c) {
-  const card = document.querySelector(`.callout-card[data-mint="${c.coinMint}"]`);
-  if (!card) return;
+function updateAllCardsForToken(mint, livePrice, liveMcap) {
+  const cards = document.querySelectorAll(`.callout-card[data-mint="${mint}"]`);
+  cards.forEach((card) => {
+    const entryMcap = parseFloat(card.getAttribute('data-entry-mcap') || 0);
+    const origMult = parseFloat(card.getAttribute('data-orig-mult') || 1);
+    const liveMult = (entryMcap > 0 && liveMcap > 0) ? (liveMcap / entryMcap) : origMult;
+    const multText = liveMult.toFixed(2) + 'x';
+    const multClass = liveMult >= 5.0 ? 'mult-super' : liveMult >= 1.0 ? 'mult-up' : 'mult-down';
+    const isGain = liveMult >= 1.0;
 
-  const mult = Number(c._liveDexMult || c.multiplier || c.multiple || 1);
-  const multText = mult.toFixed(2) + 'x';
-  const multClass = mult >= 5.0 ? 'mult-super' : mult >= 1.0 ? 'mult-up' : 'mult-down';
-  const isGain = mult >= 1.0;
-  const entryMcap = Number(c.entryMcap || c.marketCap || 0);
-  const currMcap = Number(c._liveDexMcap || c.currentMcap || c.marketCap || 0);
-  const dexPrice = Number(c._liveDexPrice || c.currentPriceUsd || c.calloutPriceUsd || 0);
-
-  // 1. Update Multiplier Badge
-  const badgeEl = card.querySelector('.multiplier-badge');
-  if (badgeEl) {
-    badgeEl.textContent = multText;
-    badgeEl.className = `multiplier-badge ${multClass}`;
-  }
-
-  // 2. Update Gain/Loss Label
-  const labelEl = card.querySelector('.mult-label');
-  if (labelEl) {
-    labelEl.textContent = isGain ? 'GAIN' : 'LOSS';
-    labelEl.className = `mult-label ${isGain ? 'color-green' : 'color-red'}`;
-  }
-
-  // 3. Update DEX Price with tick animation
-  const priceValEl = card.querySelector('.stat-dex-price');
-  if (priceValEl && dexPrice > 0) {
-    const prevPrice = parseFloat(priceValEl.getAttribute('data-raw') || 0);
-    const newFormatted = fmtUSD(dexPrice);
-    if (prevPrice > 0 && Math.abs(dexPrice - prevPrice) > 1e-10) {
-      priceValEl.classList.remove('flash-green', 'flash-red');
-      void priceValEl.offsetWidth; // Force CSS reflow
-      priceValEl.classList.add(dexPrice >= prevPrice ? 'flash-green' : 'flash-red');
+    // 1. Update Multiplier Badge
+    const badgeEl = card.querySelector('.multiplier-badge');
+    if (badgeEl) {
+      badgeEl.textContent = multText;
+      badgeEl.className = `multiplier-badge ${multClass}`;
     }
-    priceValEl.setAttribute('data-raw', dexPrice);
-    priceValEl.textContent = newFormatted;
-  }
 
-  // 4. Update Current Market Cap
-  const mcapValEl = card.querySelector('.stat-curr-mcap');
-  if (mcapValEl) {
-    mcapValEl.textContent = fmtMcap(currMcap);
-    mcapValEl.className = `value stat-curr-mcap ${currMcap >= entryMcap ? 'color-green' : 'color-red'}`;
-  }
+    // 2. Update Gain/Loss Label
+    const labelEl = card.querySelector('.mult-label');
+    if (labelEl) {
+      labelEl.textContent = isGain ? 'GAIN' : 'LOSS';
+      labelEl.className = `mult-label ${isGain ? 'color-green' : 'color-red'}`;
+    }
 
-  // 5. Update Time Ago dynamically
-  const timeEl = card.querySelector('.callout-time');
-  if (timeEl && c.createdAt) {
-    timeEl.textContent = timeAgo(c.createdAt);
-  }
+    // 3. Update DEX Price with tick animation
+    const priceValEl = card.querySelector('.stat-dex-price');
+    if (priceValEl && livePrice > 0) {
+      const prevPrice = parseFloat(priceValEl.getAttribute('data-raw') || 0);
+      const newFormatted = fmtUSD(livePrice);
+      if (prevPrice > 0 && Math.abs(livePrice - prevPrice) > 1e-10) {
+        priceValEl.classList.remove('flash-green', 'flash-red');
+        void priceValEl.offsetWidth; // Force CSS reflow
+        priceValEl.classList.add(livePrice >= prevPrice ? 'flash-green' : 'flash-red');
+      }
+      priceValEl.setAttribute('data-raw', livePrice);
+      priceValEl.textContent = newFormatted;
+    }
+
+    // 4. Update Current Market Cap
+    const mcapValEl = card.querySelector('.stat-curr-mcap');
+    if (mcapValEl && liveMcap > 0) {
+      mcapValEl.textContent = fmtMcap(liveMcap);
+      mcapValEl.className = `value stat-curr-mcap ${liveMcap >= entryMcap ? 'color-green' : 'color-red'}`;
+    }
+
+    // 5. Update Time Ago dynamically
+    const timeEl = card.querySelector('.callout-time');
+    const created = Number(card.getAttribute('data-created') || 0);
+    if (timeEl && created > 0) {
+      timeEl.textContent = timeAgo(created);
+    }
+  });
 }
 
 function renderCalloutsGrid() {
   if (!dom.calloutsGrid) return;
 
-  let filtered = [...state.callouts];
+  // STRICTLY SORT NEWEST FIRST!
+  let filtered = sortCalloutsNewestFirst(state.callouts);
 
   // Filter chips
   if (state.calloutFilter === '2x') {
@@ -617,7 +642,7 @@ function renderCalloutsGrid() {
     filtered = filtered.filter((c) => (c._liveDexMult || c.multiplier || c.multiple || 1) >= 10.0);
   } else if (state.calloutFilter === 'recent') {
     const oneHourAgo = Date.now() - 60 * 60 * 1000;
-    filtered = filtered.filter((c) => (c.createdAt || 0) >= oneHourAgo);
+    filtered = filtered.filter((c) => getCalloutTimestamp(c) >= oneHourAgo);
   }
 
   // Text search
@@ -631,6 +656,9 @@ function renderCalloutsGrid() {
       return sym.includes(q) || name.includes(q) || caller.includes(q) || mint.includes(q);
     });
   }
+
+  // Ensure filtered is always strictly sorted newest first
+  filtered = sortCalloutsNewestFirst(filtered);
 
   if (dom.calloutCountBadge) {
     dom.calloutCountBadge.innerHTML = `<span class="live-dot-beacon"></span>${filtered.length}`;
@@ -649,6 +677,9 @@ function renderCalloutsGrid() {
     const mint = c.coinMint || '';
     const sym = (c.coinSymbol || 'TOKEN').toUpperCase();
     const name = c.coinName || sym;
+    const createdAt = getCalloutTimestamp(c);
+    const calloutId = c.calloutId || (mint + '_' + createdAt);
+
     const mult = Number(c._liveDexMult || c.multiplier || c.multiple || 1);
     const multText = mult.toFixed(2) + 'x';
     const multClass = mult >= 5.0 ? 'mult-super' : mult >= 1.0 ? 'mult-up' : 'mult-down';
@@ -659,7 +690,7 @@ function renderCalloutsGrid() {
     const dexPrice = Number(c._liveDexPrice || c.currentPriceUsd || c.calloutPriceUsd || c.priceUsd || 0);
     const dexPriceFormatted = dexPrice > 0 ? fmtUSD(dexPrice) : '—';
 
-    const isFresh = c._isNewArrival || (c.createdAt && (now - c.createdAt) < 300000); // 5 mins fresh
+    const isFresh = c._isNewArrival || (createdAt > 0 && (now - createdAt) < 300000); // 5 mins fresh
 
     const callerName = c.callerLabel || (c.callerXUsername ? '@' + c.callerXUsername : fmtShortAddr(c.callerWallet));
     const callerInitial = (callerName.replace('@', '')[0] || 'A').toUpperCase();
@@ -675,7 +706,7 @@ function renderCalloutsGrid() {
     const pumpUrl = `https://pump.fun/coin/${mint}`;
 
     return `
-      <div class="callout-card" data-mint="${mint}">
+      <div class="callout-card" data-callout-id="${calloutId}" data-mint="${mint}" data-entry-mcap="${entryMcap}" data-orig-mult="${c.multiplier || c.multiple || 1}" data-created="${createdAt}">
         <!-- Caller Row -->
         <div class="card-caller-row">
           <div class="caller-identity">
@@ -694,7 +725,7 @@ function renderCalloutsGrid() {
               ${isFresh ? `<span class="badge-new-live"><span class="pulse-dot"></span> LIVE</span>` : ''}
             </div>
           </div>
-          <span class="callout-time">${timeAgo(c.createdAt)}</span>
+          <span class="callout-time">${timeAgo(createdAt)}</span>
         </div>
 
         <!-- Token Banner (Direct Callout Link to DexScreener) -->
@@ -1237,6 +1268,7 @@ window.addEventListener('DOMContentLoaded', () => {
   setInterval(fetchTokenStats, STATS_INTERVAL_MS);
   setInterval(fetchCallouts, CALLOUTS_INTERVAL_MS);
   setInterval(syncLiveDexPricesForCallouts, DEX_SYNC_INTERVAL_MS);
+  setInterval(updateLiveTimestamps, 1000);
   setInterval(fetchTrending, TRENDING_INTERVAL_MS);
 });
 
