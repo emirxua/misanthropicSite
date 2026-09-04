@@ -23,13 +23,15 @@
   const MAX_SPEED = 5.6;
   let renderScale = 1;
 
-  function getDeathMessages() {
-    const msgs = window.I18n?.t('game.death');
-    return Array.isArray(msgs) ? msgs : ['Game Over'];
-  }
+  const ENGLISH_DEATH_MESSAGES = [
+    'Human interaction inevitable. Game Over.',
+    'Caught by a small-talk enthusiast. Unfortunate.',
+    'You touched a human. Escape failed.',
+    'Social battery fully depleted. Game Over.',
+  ];
 
-  function t(key) {
-    return window.I18n?.t(key) || key;
+  function getDeathMessages() {
+    return ENGLISH_DEATH_MESSAGES;
   }
 
   let flowerImg = new Image();

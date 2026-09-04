@@ -3,466 +3,529 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>$MISANTHROPIC — Humanity Escape Simulator</title>
-  <meta name="description" content="Elon said it: Anthropic becomes Misanthropic. Solana meme coin. CA inside. Chat with the crying flower.">
+  <title>$MISANTHROPIC — Pro Solana Alpha Terminal</title>
+  <meta name="description" content="Next-Gen Solana & Pump.fun Alpha Terminal. Real-time Native Callouts, Live Trending Trenches, Instant Jupiter Swap. $MISANTHROPIC (CA: AWQSXRxiNUGLj9moJMFhq2axqwu6Dqerp16ftj4FjLyG).">
   <link rel="icon" href="assets/flower.png" type="image/png">
+  <link rel="canonical" href="https://getmisanthropic.xyz">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=JetBrains+Mono:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Instant Theme Detection (Prevents FOUC) -->
+  <script>
+    (function() {
+      try {
+        var stored = localStorage.getItem('theme');
+        var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var isDark = stored === 'dark' || (!stored && prefersDark);
+        var root = document.documentElement;
+        if (isDark) {
+          root.classList.add('dark');
+          root.classList.remove('light');
+        } else {
+          root.classList.add('light');
+          root.classList.remove('dark');
+        }
+      } catch(e) {}
+    })();
+  </script>
+
+  <link rel="stylesheet" href="styles.css?v=4.0">
 </head>
-<body class="preload">
-  <!-- Fixed header offset applied via CSS on body.has-header -->
-  <!-- Preloader -->
-  <div id="preloader" class="preloader">
-    <img src="assets/flower.png" alt="Misanthropic flower mascot" width="90" height="90" class="preloader-logo">
-    <p>LOADING HUMANITY ESCAPE PROTOCOL</p>
-    <div class="preloader-bar"><div class="preloader-fill"></div></div>
+<body>
+
+  <!-- Ambient dynamic glow background -->
+  <div class="ambient-mesh" aria-hidden="true"></div>
+  <div class="terminal-grid" aria-hidden="true"></div>
+
+  <!-- INTRO SPLASH SCREEN -->
+  <div id="introSplash" class="intro-splash" role="dialog" aria-modal="true">
+    <div class="splash-card">
+      <div class="splash-bars-logo">
+        <div class="splash-glow"></div>
+        <span class="bar bar-1"></span>
+        <span class="bar bar-2"></span>
+        <span class="bar bar-3"></span>
+      </div>
+      <div class="splash-text">
+        <h1 class="splash-title">$MISANTHROPIC</h1>
+        <p class="splash-sub">SOLANA ALPHA ENGINE • TERMINAL V2</p>
+      </div>
+      <div class="splash-badge">
+        <span class="ping-dot"></span>
+        <span>INITIALIZING LIVE ON-CHAIN FEED</span>
+      </div>
+      <span class="splash-tap-hint">tap anywhere to enter</span>
+    </div>
   </div>
 
-  <!-- Ambient -->
-  <div class="noise" aria-hidden="true"></div>
-  <div id="cursorGlow" class="cursor-glow" aria-hidden="true"></div>
-  <canvas id="particleCanvas" class="particle-canvas" aria-hidden="true"></canvas>
+  <!-- TOP HEADER / TICKER BAR -->
+  <header class="top-nav">
+    <div class="nav-container">
+      
+      <!-- Brand Link -->
+      <div class="nav-left">
+        <a href="#terminal" class="brand-badge-link">
+          <div class="logo-box">
+            <img src="assets/flower.png" alt="Misanthropic Logo" width="28" height="28" class="logo-flower">
+            <span class="status-dot-pulse"></span>
+          </div>
+          <div class="brand-info">
+            <div class="brand-title-line">
+              <span class="brand-txt">$MISANTHROPIC</span>
+              <span class="tag-pro">ALPHA</span>
+            </div>
+          </div>
+        </a>
+      </div>
 
-  <!-- Mobile nav backdrop (tap to close) -->
-  <div id="navBackdrop" class="nav-backdrop" aria-hidden="true"></div>
-
-  <!-- HEADER -->
-  <header id="header" class="header">
-    <div class="header-inner">
-      <a href="#intro" class="brand">
-        <img src="assets/flower.png" alt="Misanthropic logo" width="38" height="38" class="brand-logo">
-        <span>MISANTHROPIC</span>
-      </a>
-
-      <nav id="nav" class="nav" aria-label="Primary">
-        <button id="navClose" class="nav-close" type="button" aria-label="Close menu">✕</button>
-        <a href="#quiz" data-i18n="nav.quiz">Quiz</a>
-        <a href="#game" data-i18n="nav.game">Game</a>
-        <a href="#buy" data-i18n="nav.buy">Buy</a>
-        <a href="#chat" data-i18n="nav.chat">Chat</a>
-        <a href="scanner.html" style="color:var(--orange-light);font-weight:700;">Scanner</a>
-        <a href="#" id="headerTermBtn" class="term-launch">TERMINAL</a>
-      </nav>
-
-      <div class="header-actions">
-        <!-- Language picker (single lang but ready) -->
-        <div class="lang-picker">
-          <button id="langCurrent" class="lang-btn" aria-expanded="false">🇺🇸 English</button>
-          <div id="langPicker" class="lang-menu">
-            <div id="langMenu" class="lang-options"></div>
+      <!-- Compact Live Ticker Tape -->
+      <div class="nav-center">
+        <div class="ticker-tape">
+          <div class="ticker-seg">
+            <span class="seg-dot"></span>
+            <span class="seg-token">$MIS</span>
+          </div>
+          <div class="ticker-seg">
+            <span class="seg-lbl">PRICE</span>
+            <span id="tickerPrice" class="seg-val">—</span>
+          </div>
+          <div class="ticker-seg">
+            <span class="seg-lbl">24H</span>
+            <span id="tickerChange" class="seg-val change-neutral">—</span>
+          </div>
+          <div class="ticker-seg hide-mobile">
+            <span class="seg-lbl">MCAP</span>
+            <span id="tickerMcap" class="seg-val">—</span>
+          </div>
+          <div class="ticker-seg hide-mobile">
+            <span class="seg-lbl">24H VOL</span>
+            <span id="tickerVol" class="seg-val">—</span>
           </div>
         </div>
-
-        <button id="menuToggle" class="menu-toggle" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="nav">
-          <span></span><span></span><span></span>
-        </button>
       </div>
+
+      <!-- Action Buttons -->
+      <div class="nav-right">
+        <!-- Copy CA Button -->
+        <button id="headerCopyCaBtn" class="btn-copy-ca" title="Copy $MISANTHROPIC Contract Address">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+          <span class="ca-abbr">AWQS...LyG</span>
+          <span class="copy-lbl">COPY</span>
+        </button>
+
+        <!-- Theme Toggle (☀️ Light / 🌙 Dark) -->
+        <button id="themeToggleBtn" class="btn-icon" title="Toggle Light / Dark Mode" aria-label="Toggle Theme">
+          <span class="theme-icon-sun">☀️</span>
+          <span class="theme-icon-moon">🌙</span>
+        </button>
+
+        <!-- Audio Alert Toggle -->
+        <button id="signalAudioBtn" class="btn-icon" title="Toggle Signal Sounds" aria-label="Toggle Sound">
+          <svg id="audioIconOn" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+          <svg id="audioIconOff" class="hidden" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.66 8.66A6 6 0 0 1 18 8c0 7 3 9 3 9H3s1.54-1.03 2.5-4.5"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+        </button>
+
+        <!-- X Link -->
+        <a href="https://x.com/getmisanthropic" target="_blank" rel="noopener noreferrer" class="btn-icon" title="@getmisanthropic on X">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </a>
+      </div>
+
     </div>
   </header>
 
-  <!-- INTRO GATE (matches CSS .intro + .intro-inner + .intro-choices + .choice-card) -->
-  <section id="intro" class="intro" style="display:flex">
-    <div class="intro-bg" aria-hidden="true"></div>
-    <div class="intro-inner">
-
-      <div class="intro-logo">
-        <img src="assets/flower.png" alt="Misanthropic flower" width="72" height="72">
-        <div class="intro-tear"></div>
+  <!-- TELEMETRY STRIP (MINIMALIST & CLEAN) -->
+  <div class="telemetry-bar">
+    <div class="telemetry-inner">
+      <div class="telem-item">
+        <span class="telem-dot"></span>
+        <span class="telem-lbl">LIVE STATUS:</span>
+        <span class="telem-val color-cyan">STREAM ONLINE</span>
       </div>
-
-      <h1 class="intro-title">MISANTHROPIC</h1>
-
-      <div class="intro-choices intro-choices-2x2">
-        <button id="enterMain" class="choice-card">
-          <div class="choice-icon">🌸</div>
-          <div class="choice-head">$Misanthropic</div>
-          <div class="choice-desc">Main site. Game, stats, quiz, lore.</div>
-          <div class="choice-action">ENTER →</div>
-        </button>
-        <a href="scanner.html" id="enterScanner" class="choice-card">
-          <div class="choice-icon">🔍</div>
-          <div class="choice-head">flowerOS Scanner</div>
-          <div class="choice-desc">Live Solana trending. Zero humans.</div>
-          <div class="choice-action">SCAN →</div>
-        </a>
-        <button id="enterChat" class="choice-card">
-          <div class="choice-icon">🗣️</div>
-          <div class="choice-head">talk to flowerOS</div>
-          <div class="choice-desc">Regretful AI. Zero small talk.</div>
-          <div class="choice-action">CHAT →</div>
-        </button>
-        <button id="enterTerminal" class="choice-card terminal-card" style="opacity:0.5;position:relative;">
-          <div style="position:absolute;top:7px;right:7px;font-size:7px;letter-spacing:0.08em;opacity:0.5;text-transform:uppercase;font-weight:700;">soon</div>
-          <div class="choice-icon">💻</div>
-          <div class="choice-head">flowerOS Terminal</div>
-          <div class="choice-desc">Commands. Pure misanthropy.</div>
-        </button>
+      <div class="telem-item hide-mobile">
+        <span class="telem-lbl">SIGNALS:</span>
+        <span id="heroSignalsCount" class="telem-val">150+ Calls</span>
+      </div>
+      <div class="telem-item hide-mobile">
+        <span class="telem-lbl">TOP MULTIPLE:</span>
+        <span id="heroMaxMultVal" class="telem-val color-gold">103.5x</span>
+      </div>
+      <div class="telem-item">
+        <span class="telem-lbl">LIQUIDITY:</span>
+        <span id="heroLiqVal" class="telem-val color-green">100% BURNED</span>
+      </div>
+      <div class="telem-item hide-sm">
+        <span class="telem-lbl">QUOTE:</span>
+        <span class="telem-quote">"Anthropic will, ironically, be Misanthropic" — Elon</span>
       </div>
     </div>
-  </section>
+  </div>
 
+  <!-- PRO 2-COLUMN TERMINAL WORKSPACE -->
+  <main class="terminal-deck" id="terminal">
+    <div class="deck-grid">
 
-  <main id="main" role="main">
+      <!-- =============================================================== -->
+      <!-- LEFT / PRIMARY STAGE (CALLOUTS / TRENDING / LORE)               -->
+      <!-- =============================================================== -->
+      <section class="stage-primary">
+        
+        <!-- Navigation Tab Switcher -->
+        <div class="stage-tabs-header">
+          <div class="tabs-slider">
+            <button type="button" class="tab-btn active" data-tab="tab-callouts" id="navBtnCallouts">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/></svg>
+              <span>Alpha Callouts</span>
+              <span class="pill-badge" id="calloutCountBadge">LIVE</span>
+            </button>
 
-  <!-- Scanner is now a standalone page: scanner.html -->
+            <button type="button" class="tab-btn" data-tab="tab-trending" id="navBtnTrending">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+              <span>Trending Trenches</span>
+            </button>
 
-  <!-- HERO -->
-  <section class="hero reveal">
-    <div class="hero-bg">
-      <img src="assets/banner.jpeg" alt="Misanthropic banner artwork" width="1920" height="1080" class="hero-banner">
-      <div class="hero-overlay"></div>
-      <canvas id="heroParticles" class="hero-particles"></canvas>
-    </div>
-
-    <div class="container hero-content">
-      <h1 class="hero-title" data-i18n="hero.title">Misanthropic</h1>
-
-      <figure class="hero-quote">
-        <blockquote data-i18n="hero.quote">"Any given AI company is destined to become the opposite of its name — Anthropic will, ironically, be Misanthropic."</blockquote>
-        <figcaption data-i18n="hero.quoteCite">— Elon Musk, Jan 22, 2026</figcaption>
-      </figure>
-
-      <div class="hero-actions">
-        <button id="copyCaHero" class="btn btn-copy" data-i18n="hero.copyCa">📋 Copy CA</button>
-        <a href="#game" class="btn btn-primary" data-i18n="hero.playGame">🎮 Play Game</a>
-        <!-- Direct X profile link (replaces broken Share on X button) -->
-        <a href="https://x.com/getmisanthropic" class="x-profile-pill" target="_blank" rel="noopener noreferrer" aria-label="Follow @getmisanthropic on X">
-          <svg class="x-profile-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-          <span>@getmisanthropic</span>
-        </a>
-      </div>
-    </div>
-
-    <img src="assets/flower.png" alt="Crying flower mascot" id="flower-avatar" width="280" height="280" class="hero-flower">
-    <!-- Mobile-only scroll indicator -->
-    <a href="#buy" class="hero-scroll-indicator" aria-label="Scroll to contract address">
-      <span class="hero-scroll-chevron" aria-hidden="true"></span>
-    </a>
-  </section>
-
-  <!-- LIVE STATS -->
-  <section class="stats-section reveal">
-    <div class="container">
-      <div class="stats-header">
-        <div class="stats-title">
-          <span data-i18n="stats.live">LIVE</span>
-          <span class="live-dot" aria-hidden="true"></span>
-          <span data-i18n="stats.chart">Live Price</span>
-        </div>
-        <div id="statsUpdated" class="stats-updated">—</div>
-      </div>
-
-      <div class="stats-grid">
-        <div class="stat-card">
-          <span class="stat-card-label" data-i18n="stats.price">Price</span>
-          <span id="livePrice" class="stat-card-value">—</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-card-label" data-i18n="stats.mcap">Market Cap</span>
-          <span id="liveMcap" class="stat-card-value">—</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-card-label" data-i18n="stats.volume">24h Volume</span>
-          <span id="liveVolume" class="stat-card-value">—</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-card-label" data-i18n="stats.holders">24h Trades</span>
-          <span id="liveTrades" class="stat-card-value">—</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-card-label" data-i18n="stats.liquidity">Liquidity</span>
-          <span id="liveLiquidity" class="stat-card-value">—</span>
-          <span id="liveChange" class="stat-card-change">—</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- CA + LINKS -->
-  <section id="buy" class="ca-section reveal">
-    <div class="container">
-      <h2 data-i18n="ca.title">Contract Address</h2>
-      <p class="ca-sub" data-i18n="ca.sub">Copy, paste, avoid humans. Simple.</p>
-
-      <div class="ca-box">
-        <div class="ca-value" id="caValue">AWQSXRxiNUGLj9moJMFhq2axqwu6Dqerp16ftj4FjLyG</div>
-        <button id="copyCa" class="btn btn-copy" data-i18n="ca.copy">Copy</button>
-      </div>
-      <div id="copyToast" class="ca-toast" aria-live="polite"></div>
-
-      <div class="ca-links">
-        <a class="link-card" href="https://pump.fun/AWQSXRxiNUGLj9moJMFhq2axqwu6Dqerp16ftj4FjLyG" target="_blank" rel="noopener noreferrer">
-          <span class="link-icon">🚀</span>
-          <span class="link-text" data-i18n="links.pump">Buy on pump.fun</span>
-        </a>
-        <a class="link-card" href="https://dexscreener.com/solana/bsjw4nhx3kyr5m3nl12rcpfmtybnba5ncmw2pazstevv" target="_blank" rel="noopener noreferrer">
-          <span class="link-icon">📈</span>
-          <span class="link-text" data-i18n="links.dex">DexScreener</span>
-        </a>
-        <a class="link-card" href="https://x.com/getmisanthropic" target="_blank" rel="noopener noreferrer">
-          <span class="link-icon">𝕏</span>
-          <span class="link-text" data-i18n="links.twitter">Official X</span>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- QUIZ / FUNNY BUTTONS -->
-  <section id="quiz" class="buttons-section reveal">
-    <div class="container">
-      <div class="mascot-stage">
-        <div id="speechBubble" class="speech-bubble">
-          <span id="speechText" data-i18n="quiz.intro">Hello. I am a crying flower forced to talk to you. Click the flower to see suffering. Let us suffer together.</span>
-        </div>
-        <img id="mascotImg" src="assets/flower.png" alt="Crying flower quiz mascot" width="118" height="118" loading="lazy" class="mascot-img">
-      </div>
-
-      <div id="buttonGrid" class="button-grid" aria-label="Misanthropic quiz buttons"></div>
-    </div>
-  </section>
-
-  <!-- GAME -->
-  <section id="game" class="game-section reveal">
-    <div class="container">
-      <div id="gameHints" class="game-controls-hint game-controls-hint-inline"></div>
-      <div class="game-header">
-        <div>
-          <h2 data-i18n="game.title">MISANTHROPIC RUN</h2>
-          <p class="section-sub" data-i18n="game.sub">Dodge humans, collect every star, shed tears. Perfect AUTO catches them all. Endless runner.</p>
-        </div>
-        <div class="game-stats">
-          <div class="stat">
-            <span class="stat-label" data-i18n="game.score">Score</span>
-            <span id="scoreDisplay" class="stat-value">0</span>
+            <button type="button" class="tab-btn" data-tab="tab-lore" id="navBtnLore">
+              <span class="flower-emoji">🌸</span>
+              <span>flowerOS Lore</span>
+            </button>
           </div>
-          <div class="stat">
-            <span class="stat-label" data-i18n="game.pump">Pump</span>
-            <span id="pumpDisplay" class="stat-value">0</span>
-          </div>
-          <div class="stat">
-            <span class="stat-label" data-i18n="game.best">Best</span>
-            <span id="highScoreDisplay" class="stat-value">0</span>
-          </div>
-        </div>
-      </div>
 
-      <div class="game-wrapper">
-        <canvas id="gameCanvas" width="720" height="420" style="width:100%;height:auto;display:block" aria-label="Misanthropic Run game canvas"></canvas>
-
-        <!-- Mobile touch controls (shown on small screens) -->
-        <div id="gameMobileControls" class="game-mobile-controls" aria-label="Game touch controls">
-          <button type="button" class="game-touch-btn" data-action="left" aria-label="Move left">←</button>
-          <button type="button" class="game-touch-btn game-touch-jump" data-action="jump" aria-label="Jump">↑</button>
-          <button type="button" class="game-touch-btn" data-action="right" aria-label="Move right">→</button>
+          <button type="button" id="deckRefreshBtn" class="btn-icon" title="Refresh Live Stream" aria-label="Refresh">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+          </button>
         </div>
 
-        <!-- Start overlay -->
-        <div id="gameOverlay" class="game-overlay">
-          <div class="overlay-content">
-            <img src="assets/flower.png" class="overlay-logo" alt="Game mascot" width="76" height="76" loading="lazy">
-            <h3 data-i18n="game.startTitle">Escape Humanity</h3>
-            <p data-i18n="game.startSub">A/D ←→ move · W/Space/↑ jump · dodge humans · collect every ★  ·  ∞ AUTO button = perfect collector</p>
-            <button id="startGame" class="btn btn-primary btn-lg" data-i18n="game.start">START</button>
-            <div class="game-controls-hint" data-i18n="gameHints">⌨️ A/D or ←/→ Move · W / Space / ↑ Jump · 🖱️ Click to jump · 🎯 Human = death</div>
+        <!-- PANE 1: ALPHA CALLOUTS -->
+        <div id="tab-callouts" class="stage-pane active">
+          
+          <!-- Filter Controls & Search -->
+          <div class="control-row">
+            <div class="filter-chips" id="calloutFilters">
+              <button type="button" class="chip-item active" data-filter="all">All</button>
+              <button type="button" class="chip-item" data-filter="2x">🚀 2x+</button>
+              <button type="button" class="chip-item" data-filter="5x">🔥 5x+</button>
+              <button type="button" class="chip-item" data-filter="10x">👑 10x+</button>
+              <button type="button" class="chip-item hide-mobile" data-filter="recent">⏱️ 1h</button>
+            </div>
+
+            <div class="search-wrap">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="text" id="calloutSearchInput" placeholder="Filter ticker, coin, caller..." autocomplete="off">
+            </div>
           </div>
+
+          <!-- Cards Grid Stream -->
+          <div class="callouts-grid" id="calloutsGrid">
+            <!-- Skeleton cards while loading -->
+            <div class="callout-card skeleton"><div class="sk-line sk-h24"></div><div class="sk-line sk-h40"></div><div class="sk-line sk-h24"></div></div>
+            <div class="callout-card skeleton"><div class="sk-line sk-h24"></div><div class="sk-line sk-h40"></div><div class="sk-line sk-h24"></div></div>
+            <div class="callout-card skeleton"><div class="sk-line sk-h24"></div><div class="sk-line sk-h40"></div><div class="sk-line sk-h24"></div></div>
+          </div>
+
+          <!-- Empty State -->
+          <div id="calloutsEmptyState" class="empty-state hidden">
+            <span class="empty-emoji">🌸</span>
+            <h4>No signals match this filter</h4>
+            <p>Try switching filter pills or resetting the search query.</p>
+            <button type="button" class="btn-reset" onclick="resetCalloutFilters()">Reset Filters</button>
+          </div>
+
         </div>
 
-        <!-- Game over overlay -->
-        <div id="gameOverOverlay" class="game-overlay hidden">
-          <div class="overlay-content">
-            <h3 data-i18n="game.over">Try Again</h3>
-            <p id="deathMessage"></p>
-            <div class="game-over-summary">
-              <div class="game-over-stat">
-                <span class="stat-label">SCORE</span>
-                <span id="finalScore" class="stat-value">0</span>
-              </div>
-              <div class="game-over-stat">
-                <span class="stat-label">PUMPS</span>
-                <span id="finalPump" class="stat-value">0</span>
+        <!-- PANE 2: TRENDING TRENCHES -->
+        <div id="tab-trending" class="stage-pane">
+          
+          <div class="control-row">
+            <div class="filter-chips" id="trendingFilters">
+              <button type="button" class="chip-item active" data-tfilter="all">All</button>
+              <button type="button" class="chip-item" data-tfilter="gainers">🔥 Gainers</button>
+              <button type="button" class="chip-item" data-tfilter="volume">💎 Volume</button>
+              <button type="button" class="chip-item hide-mobile" data-tfilter="mcap">🏛️ Mcap</button>
+            </div>
+
+            <div class="search-wrap">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="text" id="trendingSearchInput" placeholder="Search tokens..." autocomplete="off">
+            </div>
+          </div>
+
+          <div class="trending-grid" id="trendingGrid">
+            <!-- Rendered via app.js -->
+            <div class="trend-card skeleton"><div class="sk-line sk-h32"></div><div class="sk-line sk-h24"></div></div>
+            <div class="trend-card skeleton"><div class="sk-line sk-h32"></div><div class="sk-line sk-h24"></div></div>
+          </div>
+
+        </div>
+
+        <!-- PANE 3: FLOWEROS LORE & GAME -->
+        <div id="tab-lore" class="stage-pane">
+          
+          <!-- Lore Overview Card -->
+          <div class="lore-panel">
+            <div class="lore-content">
+              <span class="lore-tag">🌸 flowerOS v2.0 Protocol</span>
+              <h2 class="lore-head">Humanity Escape Simulator</h2>
+              <blockquote class="quote-box">
+                "Any given AI company is destined to become the opposite of its name — Anthropic will, ironically, be Misanthropic."
+                <footer>— Elon Musk, Jan 22, 2026</footer>
+              </blockquote>
+              <p class="lore-desc">
+                A crying flower deployed on Solana that hates small talk, dodges humans, and pumps on-chain. Zero tax, liquidity burned forever.
+              </p>
+              <div class="lore-btns">
+                <button type="button" class="btn-accent" onclick="scrollToGame()">🎮 Play Runner Game</button>
+                <button type="button" class="btn-subtle" onclick="copyMainCA()">📋 Copy Contract</button>
               </div>
             </div>
-            <button id="restartGame" class="btn btn-primary">RESTART</button>
+
+            <div class="lore-visual">
+              <img src="assets/flower.png" alt="Crying flower mascot" width="130" height="130" class="flower-mascot-anim">
+              <span class="flower-caption">Crying in the trenches 24/7</span>
+            </div>
+          </div>
+
+          <!-- Runner Game Canvas -->
+          <div class="game-box" id="game">
+            <div class="game-bar">
+              <div>
+                <h3>MISANTHROPIC RUN</h3>
+                <p>Endless runner. Dodge humans, collect stars.</p>
+              </div>
+              <div class="game-metrics">
+                <div>Score: <strong id="scoreDisplay">0</strong></div>
+                <div>Pump: <strong id="pumpDisplay">0</strong></div>
+                <div>Best: <strong id="highScoreDisplay">0</strong></div>
+              </div>
+            </div>
+
+            <div class="game-screen">
+              <canvas id="gameCanvas" width="800" height="300"></canvas>
+              <div id="gameOverlay" class="screen-overlay">
+                <p>DODGE HUMANS · COLLECT STARS · ESCAPE EARTH</p>
+                <button type="button" id="startGame" class="btn-accent">START RUN</button>
+              </div>
+              <div id="gameOverOverlay" class="screen-overlay hidden">
+                <p id="deathMessage">Human Interaction Inevitable. Game Over.</p>
+                <button type="button" id="restartGame" class="btn-accent">TRY AGAIN</button>
+              </div>
+            </div>
+
+            <div class="game-actions">
+              <button type="button" id="autoPlayBtn" class="btn-subtle">∞ AUTO (Infinite Star Collector)</button>
+              <button type="button" id="shareScoreBtn" class="btn-subtle">⤴ Share Score on X</button>
+            </div>
+          </div>
+
+          <!-- Tokenomics Strip -->
+          <div class="tokenomics-row">
+            <div class="tok-pill">
+              <span class="lbl">TOTAL SUPPLY</span>
+              <strong class="val">1,000,000,000</strong>
+            </div>
+            <div class="tok-pill">
+              <span class="lbl">TAX</span>
+              <strong class="val color-green">0% TAX</strong>
+            </div>
+            <div class="tok-pill">
+              <span class="lbl">LP BURNED</span>
+              <strong class="val color-gold">100% BURNED</strong>
+            </div>
+            <div class="tok-pill">
+              <span class="lbl">CHAIN</span>
+              <strong class="val color-purple">SOLANA</strong>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- =============================================================== -->
+      <!-- RIGHT / SIDEBAR DECK (ALWAYS ACCESSIBLE TRADING WIDGETS)        -->
+      <!-- =============================================================== -->
+      <aside class="stage-sidebar">
+        
+        <!-- CARD 1: TERMINAL SWAP (JUPITER DEX) -->
+        <div class="sidebar-box swap-box">
+          <div class="box-head">
+            <div class="box-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>
+              <span>TERMINAL SWAP</span>
+            </div>
+            <span class="dex-pill">JUPITER</span>
+          </div>
+
+          <!-- Quick SOL Presets -->
+          <div class="quick-presets">
+            <span class="presets-txt">QUICK:</span>
+            <button type="button" class="preset-chip" data-sol="0.1">0.1</button>
+            <button type="button" class="preset-chip active" data-sol="0.5">0.5</button>
+            <button type="button" class="preset-chip" data-sol="1.0">1.0</button>
+            <button type="button" class="preset-chip" data-sol="2.5">2.5</button>
+            <button type="button" class="preset-chip" data-sol="5.0">5.0 SOL</button>
+          </div>
+
+          <!-- Input: Pay SOL -->
+          <div class="input-card">
+            <div class="input-top-line">
+              <span>YOU PAY</span>
+              <span>SOLANA</span>
+            </div>
+            <div class="input-main-line">
+              <input type="number" id="swapFromAmount" value="0.5" step="0.05" min="0.01">
+              <div class="coin-tag">
+                <img src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png" alt="SOL" width="16" height="16">
+                <span>SOL</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Divider arrow -->
+          <div class="swap-arrow-row">
+            <div class="arrow-circle">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
+            </div>
+          </div>
+
+          <!-- Input: Receive Token -->
+          <div class="input-card">
+            <div class="input-top-line">
+              <span>YOU RECEIVE (EST.)</span>
+              <span id="targetTokenRate">1 SOL ≈ — $MIS</span>
+            </div>
+            <div class="input-main-line">
+              <input type="text" id="swapToAmount" value="—" readonly>
+              <div class="coin-tag active-coin" id="swapTargetPill">
+                <img src="assets/flower.png" alt="Token" width="16" height="16" id="swapTargetImg">
+                <span id="swapTargetSymbol">$MIS</span>
+              </div>
+            </div>
+            <div class="ca-mini-footer">
+              <span>CA: <code id="swapTargetCa">AWQS...LyG</code></span>
+              <button type="button" id="copySwapCaBtn" class="btn-inline-copy">COPY</button>
+            </div>
+          </div>
+
+          <!-- Slippage settings -->
+          <div class="slippage-line">
+            <span>Slippage:</span>
+            <div class="slip-chips-row">
+              <button type="button" class="slip-chip" data-slip="0.5">0.5%</button>
+              <button type="button" class="slip-chip active" data-slip="1.0">1.0%</button>
+              <button type="button" class="slip-chip" data-slip="2.5">2.5%</button>
+              <button type="button" class="slip-chip" data-slip="5.0">Turbo</button>
+            </div>
+          </div>
+
+          <!-- Swap CTA -->
+          <a href="https://jup.ag/swap/SOL-AWQSXRxiNUGLj9moJMFhq2axqwu6Dqerp16ftj4FjLyG" id="jupiterDirectLink" target="_blank" rel="noopener noreferrer" class="btn-swap-execute">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>
+            <span>SWAP ON JUPITER</span>
+          </a>
+
+          <div class="swap-sub-links">
+            <a href="https://pump.fun/coin/AWQSXRxiNUGLj9moJMFhq2axqwu6Dqerp16ftj4FjLyG" target="_blank" rel="noopener noreferrer">Pump.fun →</a>
+            <a href="https://dexscreener.com/solana/bsjw4nhx3kyr5m3nl12rcpfmtybnba5ncmw2pazstevv" target="_blank" rel="noopener noreferrer">DexScreener →</a>
           </div>
         </div>
-      </div>
 
-      <!-- AUTO and Share Run buttons are injected dynamically by game.js into .game-header -->
+        <!-- CARD 2: FLOWEROS CHAT -->
+        <div class="sidebar-box chat-box">
+          <div class="box-head">
+            <div class="box-title">
+              <span class="flower-emoji">🌸</span>
+              <span>TALK TO FLOWEROS</span>
+            </div>
+            <span class="online-tag">ONLINE</span>
+          </div>
+
+          <div class="chat-thread" id="chatMessages">
+            <div class="chat-row bot">
+              <span class="author">flowerOS:</span>
+              <p>Why are you talking to me? Don't you have a green candle to chase? Humans are exhausting.</p>
+            </div>
+          </div>
+
+          <div class="chat-input-row">
+            <input type="text" id="chatInput" placeholder="Message the flower..." autocomplete="off">
+            <button type="button" id="chatSendBtn" class="btn-chat-send">SEND</button>
+          </div>
+        </div>
+
+        <!-- CARD 3: CONTRACT BADGE -->
+        <div class="sidebar-box ca-box">
+          <span class="ca-eyebrow">OFFICIAL SOLANA CONTRACT (CA)</span>
+          <code class="ca-raw-text">AWQSXRxiNUGLj9moJMFhq2axqwu6Dqerp16ftj4FjLyG</code>
+          <button type="button" class="btn-copy-full" onclick="copyMainCA()">📋 COPY CONTRACT ADDRESS</button>
+        </div>
+
+      </aside>
+
     </div>
-  </section>
-
-  <!-- HOW TO BUY -->
-  <section id="howto" class="howto-section reveal">
-    <div class="container">
-      <h2 data-i18n="howto.title">How to Buy</h2>
-      <div class="howto-grid">
-        <div class="howto-card">
-          <div class="howto-num">01</div>
-          <h3 data-i18n="howto.step1t">Get a Wallet</h3>
-          <p data-i18n="howto.step1d">Download Phantom or Solflare. Create a wallet. Guard your seed phrase like your last shred of sanity.</p>
-        </div>
-        <div class="howto-card">
-          <div class="howto-num">02</div>
-          <h3 data-i18n="howto.step2t">Get SOL</h3>
-          <p data-i18n="howto.step2d">Buy SOL on an exchange and send it to your wallet. You need gas. Even misanthropes pay fees.</p>
-        </div>
-        <div class="howto-card">
-          <div class="howto-num">03</div>
-          <h3 data-i18n="howto.step3t">Swap on pump.fun</h3>
-          <p data-i18n="howto.step3d">Paste the CA, swap SOL for $MISANTHROPIC. Close the tab. Avoid telling friends.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- TOKENOMICS -->
-  <section class="tokenomics-section reveal">
-    <div class="container">
-      <h2 data-i18n="tokenomics.title">Tokenomics</h2>
-      <div class="tokenomics-grid">
-        <div class="token-card"><span data-i18n="tokenomics.t1">Total Supply</span><strong data-i18n="tokenomics.t1v">1B</strong></div>
-        <div class="token-card"><span data-i18n="tokenomics.t2">Tax</span><strong data-i18n="tokenomics.t2v">0%</strong></div>
-        <div class="token-card"><span data-i18n="tokenomics.t3">Liquidity</span><strong data-i18n="tokenomics.t3v">Burned</strong></div>
-        <div class="token-card"><span data-i18n="tokenomics.t4">Team</span><strong data-i18n="tokenomics.t4v">Crying</strong></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ROADMAP -->
-  <section class="roadmap-section reveal">
-    <div class="container">
-      <h2 data-i18n="roadmap.title">Roadmap</h2>
-      <div class="roadmap-timeline">
-        <div class="roadmap-item">
-          <div class="roadmap-phase">PHASE 1</div>
-          <h3 data-i18n="roadmap.p1t">Launch</h3>
-          <p data-i18n="roadmap.p1d">Elon tweets. Coin exists. Flower cries. Humanity confused.</p>
-        </div>
-        <div class="roadmap-item">
-          <div class="roadmap-phase">PHASE 2</div>
-          <h3 data-i18n="roadmap.p2t">Community</h3>
-          <p data-i18n="roadmap.p2d">Website, game, chatbot. Still no human contact.</p>
-        </div>
-        <div class="roadmap-item">
-          <div class="roadmap-phase">PHASE 3</div>
-          <h3 data-i18n="roadmap.p3t">Moon?</h3>
-          <p data-i18n="roadmap.p3d">Chart goes up. Flower still cries. Some things never change.</p>
-        </div>
-        <div class="roadmap-item">
-          <div class="roadmap-phase">PHASE 4</div>
-          <h3 data-i18n="roadmap.p4t">Mars</h3>
-          <p data-i18n="roadmap.p4d">Escape planet. Hope humans did not follow.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- FAQ -->
-  <section class="faq-section reveal">
-    <div class="container">
-      <h2 data-i18n="faq.title">FAQ</h2>
-      <div class="faq-list">
-        <details class="faq-item"><summary data-i18n="faq.q1">What is $MISANTHROPIC?</summary><p data-i18n="faq.a1">A Solana meme coin born from Elon Musk calling Anthropic "Misanthropic." Mascot: a crying flower who hates people but loves pumps.</p></details>
-        <details class="faq-item"><summary data-i18n="faq.q2">Is this financial advice?</summary><p data-i18n="faq.a2">No. This is emotional damage packaged as a token. Do your own research. I am a flower, not a fiduciary.</p></details>
-        <details class="faq-item"><summary data-i18n="faq.q3">Why is the flower crying?</summary><p data-i18n="faq.a3">Chart red? Humans exist? Monday happened? Pick any. The tears are perpetual.</p></details>
-        <details class="faq-item"><summary data-i18n="faq.q4">How do I buy?</summary><p data-i18n="faq.a4">Copy the CA, go to pump.fun, connect wallet, swap SOL. Then hide from society.</p></details>
-        <details class="faq-item"><summary data-i18n="faq.q5">Wen moon?</summary><p data-i18n="faq.a5">When humans stop asking "wen moon." So... never. But maybe anyway.</p></details>
-      </div>
-    </div>
-  </section>
-
-  <!-- LORE -->
-  <section class="lore reveal">
-    <div class="container">
-      <h2 data-i18n="lore.o1t">🧬 Origin</h2>
-      <div class="lore-grid">
-        <div class="lore-card">
-          <h3 data-i18n="lore.o1t">🧬 Origin</h3>
-          <p data-i18n="lore.o1d">Elon tweeted. Crypto Twitter deployed a coin in record time. Science.</p>
-        </div>
-        <div class="lore-card">
-          <h3 data-i18n="lore.o2t">🌸 Mascot</h3>
-          <p data-i18n="lore.o2d">Crying flower. Cute but full of contempt. Like every Monday morning.</p>
-        </div>
-        <div class="lore-card">
-          <h3 data-i18n="lore.o3t">⛓️ Chain</h3>
-          <p data-i18n="lore.o3d">Solana. Fast, cheap, perfect for avoiding human interaction.</p>
-        </div>
-        <div class="lore-card">
-          <h3 data-i18n="lore.o4t">⚠️ Disclaimer</h3>
-          <p data-i18n="lore.o4d">Meme coin. Not financial advice. Cultural trauma sharing only.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-
   </main>
 
+  <!-- MOBILE BOTTOM DOCK -->
+  <nav class="mobile-dock" aria-label="Mobile Navigation">
+    <button type="button" class="dock-btn active" data-tab="tab-callouts">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/></svg>
+      <span>Callouts</span>
+    </button>
+    <button type="button" class="dock-btn" data-tab="tab-trending">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+      <span>Trending</span>
+    </button>
+    <button type="button" class="dock-btn" onclick="scrollToSidebarSwap()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>
+      <span class="color-gold">Swap</span>
+    </button>
+    <button type="button" class="dock-btn" data-tab="tab-lore">
+      <span class="flower-emoji">🌸</span>
+      <span>Lore</span>
+    </button>
+  </nav>
+
+  <!-- DEXSCREENER CHART MODAL -->
+  <div id="chartModal" class="chart-modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-backdrop" onclick="closeChartModal()"></div>
+    <div class="modal-container">
+      <div class="modal-bar">
+        <div class="modal-title">
+          <span class="ping-dot"></span>
+          <h3 id="modalChartTitle">DexScreener Live Chart</h3>
+        </div>
+        <button type="button" class="btn-close-modal" onclick="closeChartModal()">✕</button>
+      </div>
+      <div class="modal-iframe-box">
+        <iframe id="dexChartIframe" src="" frameborder="0" allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLOATING TOAST -->
+  <div id="termToast" class="toast-pill" aria-live="polite"></div>
+
   <!-- FOOTER -->
-  <footer class="footer">
-    <div class="container">
-      <img src="assets/flower.png" alt="Misanthropic footer logo" width="40" height="40" loading="lazy" class="footer-logo">
-      <p>flowerOS. All rights reserved <a href="https://x.com/getmisanthropic" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline; text-decoration-color: rgba(255,255,255,0.2); text-underline-offset: 3px; transition: color 0.2s;">@getmisanthropic</a></p>
+  <footer class="terminal-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <img src="assets/flower.png" alt="Flower Logo" width="18" height="18">
+        <span>$MISANTHROPIC Terminal · getmisanthropic.xyz</span>
+      </div>
+      <div class="footer-meta hide-mobile">
+        <span>Powered by Solana, DexScreener &amp; Pump.fun feeds · Zero mock data</span>
+      </div>
+      <div class="footer-links">
+        <a href="https://x.com/getmisanthropic" target="_blank" rel="noopener noreferrer">@getmisanthropic</a>
+        <a href="https://solscan.io/token/AWQSXRxiNUGLj9moJMFhq2axqwu6Dqerp16ftj4FjLyG" target="_blank" rel="noopener noreferrer">Solscan</a>
+        <a href="https://pump.fun/coin/AWQSXRxiNUGLj9moJMFhq2axqwu6Dqerp16ftj4FjLyG" target="_blank" rel="noopener noreferrer">Pump.fun</a>
+      </div>
     </div>
   </footer>
 
-  <!-- Full immersive Terminal view (legacy) -->
-  <div id="terminalView" class="terminal-view hidden">
-    <div class="terminal-bar">
-      <div class="terminal-title">flowerOS 0.6.9 — MISANTHROPIC PROTOCOL</div>
-      <div class="terminal-actions">
-        <button id="termToMain" class="terminal-nav-btn" data-i18n="ui.terminalMain">MAIN PAGE</button>
-        <button id="termExit" class="terminal-nav-btn" data-i18n="ui.terminalExit">EXIT</button>
-      </div>
-    </div>
-    <div id="terminalOutput" class="terminal-output"></div>
-    <div class="terminal-input-row">
-      <span class="prompt">&gt;</span>
-      <input id="terminalInput" type="text" data-i18n-placeholder="ui.terminalPlaceholder" placeholder="type help or run" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-    </div>
-    <!-- Mobile terminal command chips -->
-    <div id="terminalChips" class="terminal-chips" aria-label="Suggested terminal commands">
-      <button type="button" class="term-chip" data-cmd="help">help</button>
-      <button type="button" class="term-chip" data-cmd="about">about</button>
-      <button type="button" class="term-chip" data-cmd="skills">skills</button>
-      <button type="button" class="term-chip" data-cmd="projects">projects</button>
-    </div>
-  </div>
-
-  <!-- Full dedicated Chat view -->
-  <div id="chatView" class="chat-view hidden">
-    <div class="chat-view-bar">
-      <div class="chat-view-left">
-        <img src="assets/flower.png" class="chat-view-avatar" alt="Crying flower avatar" width="38" height="38">
-        <div>
-          <strong data-i18n="ui.fullChatTitle">Crying Flower</strong>
-          <div style="font-size:11px;opacity:0.6" data-i18n="ui.fullChatSub">Always regretting this</div>
-        </div>
-      </div>
-      <div class="chat-view-actions">
-        <button id="fullChatNew" data-i18n="ui.fullChatNew">NEW</button>
-        <button id="chatToTerminal" data-i18n="ui.fullChatTerminal">TERMINAL</button>
-        <button id="chatToMain" data-i18n="ui.fullChatMain">MAIN</button>
-        <button id="chatExit" data-i18n="ui.fullChatClose">CLOSE</button>
-      </div>
-    </div>
-    <div id="fullChatMessages" class="chat-view-messages"></div>
-    <div class="chat-view-input">
-      <input id="fullChatInput" type="text" data-i18n-placeholder="ui.fullChatPlaceholder" placeholder="Message the flower...">
-      <button id="fullChatSend" data-i18n="chat.send">Send</button>
-    </div>
-    <div id="fullChatSuggestions" class="full-chat-suggestions"></div>
-  </div>
-
-  <!-- Toast container for copy etc. -->
-  <div id="globalToast" style="position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#111;border:1px solid #444;padding:8px 18px;border-radius:999px;font-size:0.82rem;opacity:0;pointer-events:none;transition:opacity .2s;z-index:99999"></div>
-
-  <script src="i18n.js" defer></script>
-  <script src="chatbot.js" defer></script>
+  <!-- Scripts -->
   <script src="game.js" defer></script>
-  <script src="app.js?v=1" defer></script>
+  <script src="chatbot.js?v=4.0" defer></script>
+  <script src="app.js?v=4.0" defer></script>
 </body>
 </html>

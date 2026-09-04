@@ -19,85 +19,100 @@ exports.handler = async (event) => {
   }
 
   try {
-    // Try pump.fun API first
-    let response = await fetch('https://frontend-api-v2.pump.fun/coins/trending', {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
-        'Accept': 'application/json',
-      },
-    });
-
-    // If v2 fails, try v1
-    if (!response.ok) {
-      response = await fetch('https://frontend-api.pump.fun/coins/trending', {
+    // 1. Fetch live tokens from outbid API
+    let coins = [];
+    try {
+      const res = await fetch('https://www.outbid.bond/api/coins', {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
           'Accept': 'application/json',
         },
       });
+      if (res.ok) {
+        const d = await res.json();
+        coins = d.data || [];
+      }
+    } catch (e) {
+      console.warn('Coins fetch failed:', e);
     }
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch trending coins: ${response.status}`);
+    // 2. Fetch top boosts from DexScreener
+    let dexCoins = [];
+    try {
+      const boostsRes = await fetch('https://api.dexscreener.com/token-boosts/top/v1');
+      if (boostsRes.ok) {
+        const boosts = await boostsRes.json();
+        const solMints = boosts
+          .filter((b) => b.chainId === 'solana' && b.tokenAddress)
+          .map((b) => b.tokenAddress)
+          .slice(0, 15);
+
+        if (solMints.length > 0) {
+          const pairsRes = await fetch(
+            `https://api.dexscreener.com/latest/dex/tokens/${solMints.join(',')}`
+          );
+          if (pairsRes.ok) {
+            const pairsData = await pairsRes.json();
+            const seen = new Set();
+            for (const p of pairsData.pairs || []) {
+              const addr = p.baseToken?.address;
+              if (addr && !seen.has(addr)) {
+                seen.add(addr);
+                dexCoins.push({
+                  id: `dex-${addr.slice(0, 8)}`,
+                  name: p.baseToken?.name || 'Solana Token',
+                  ticker: p.baseToken?.symbol || 'SOL',
+                  mintAddress: addr,
+                  imageUrl: p.info?.imageUrl || '',
+                  priceUsd: parseFloat(p.priceUsd || 0),
+                  marketCap: parseFloat(p.marketCap || p.fdv || 0),
+                  volume24h: parseFloat(p.volume?.h24 || 0),
+                  change24h: parseFloat(p.priceChange?.h24 || 0),
+                  pairAddress: p.pairAddress || '',
+                  liquidityUsd: parseFloat(p.liquidity?.usd || 0),
+                  dexScreenerUrl: p.url || `https://dexscreener.com/solana/${addr}`,
+                });
+              }
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('DexScreener boosts fetch failed:', e);
     }
 
-    const data = await response.json();
+    // Deduplicate and filter out baton references
+    const all = [];
+    const seen = new Set();
+
+    for (const c of [...coins, ...dexCoins]) {
+      const m = c.mintAddress;
+      if (m && !seen.has(m) && !m.toLowerCase().includes('baton')) {
+        seen.add(m);
+        all.push(c);
+      }
+    }
+
     return {
       statusCode: 200,
-      headers: CORS,
-      body: JSON.stringify(data),
+      headers: {
+        ...CORS,
+        'Cache-Control': 'public, max-age=10, stale-while-revalidate=20',
+      },
+      body: JSON.stringify({
+        success: true,
+        count: all.length,
+        data: all,
+        timestamp: Date.now(),
+      }),
     };
   } catch (err) {
-    // Fallback to mock data if both APIs fail
-    const mockData = [
-      {
-        name: 'Misanthropic',
-        symbol: 'MIS',
-        mint: 'AWQSXRxiNUGLj9moJMFhq2axqwu6Dqerp16ftj4FjLyG',
-        image_uri: 'https://pbs.twimg.com/media/Gc0X0M7aQAAXZ29.jpg',
-        usd_market_cap: 2340000,
-      },
-      {
-        name: 'Drooling Cat',
-        symbol: 'DRCAT',
-        mint: '79H4C1V3L1C8T5P8Y9M3Z2K1Q4W7E8R9T0Y',
-        image_uri: 'https://placehold.co/240x140/orange/white?text=🐱',
-        usd_market_cap: 1280000,
-      },
-      {
-        name: 'Kintara',
-        symbol: 'KINT',
-        mint: 'K1NT4R4C01N4DDR3SS1234567890',
-        image_uri: 'https://placehold.co/240x140/teal/white?text=🃏',
-        usd_market_cap: 15200000,
-      },
-      {
-        name: 'Bountywork',
-        symbol: 'BOUNTY',
-        mint: 'B0UNTYW0RKC01N4DDR3SS12345',
-        image_uri: 'https://placehold.co/240x140/green/white?text=💼',
-        usd_market_cap: 593000,
-      },
-      {
-        name: 'Jotchua',
-        symbol: 'JOT',
-        mint: 'J0TCHU4C01N4DDR3SS12345678',
-        image_uri: 'https://placehold.co/240x140/pink/white?text=🐕',
-        usd_market_cap: 5850000,
-      },
-      {
-        name: 'Three',
-        symbol: 'THREE',
-        mint: 'THR33C01N4DDR3SS1234567890',
-        image_uri: 'https://placehold.co/240x140/purple/white?text=3️⃣',
-        usd_market_cap: 3490000,
-      },
-    ];
-
+    console.error('Trending handler error:', err);
+    // User rule: NEVER USE MOCK DATA
     return {
-      statusCode: 200,
+      statusCode: 502,
       headers: CORS,
-      body: JSON.stringify(mockData),
+      body: JSON.stringify({ success: false, count: 0, data: [], error: err.message }),
     };
   }
 };

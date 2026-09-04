@@ -17,7 +17,11 @@ else
   exit 1
 fi
 
-$PYTHON_CMD -m http.server $PORT &
+if [ -f "server.py" ]; then
+  $PYTHON_CMD server.py $PORT &
+else
+  $PYTHON_CMD -m http.server $PORT &
+fi
 SERVER_PID=$!
 sleep 1.1
 
