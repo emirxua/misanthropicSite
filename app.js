@@ -21,7 +21,7 @@ const TRENDING_INTERVAL_MS = 5_000;
    STATE
    ========================================================================== */
 const state = {
-  activeTab: 'tab-callouts',
+  activeTab: 'tab-coin',
   audioAlerts: true,
   misPriceUsd: 0.00001219,
   solPriceUsd: 135.0,
@@ -53,6 +53,7 @@ const state = {
 /* ==========================================================================
    DOM ELEMENTS CACHE
    ========================================================================== */
+
 const dom = {
   brandHomeBtn: document.getElementById('brandHomeBtn'),
   themeToggleBtn: document.getElementById('themeToggleBtn'),
@@ -320,6 +321,34 @@ async function copyToClipboard(text, label = 'Contract Address') {
 
 function copyMainCA() {
   copyToClipboard(MIS_CA, '$MISANTHROPIC CA');
+
+  // Visual feedback on intro copy button
+  const introTxt = document.getElementById('introCopyTxt');
+  const introBtn = document.getElementById('introCopyCaBtn');
+  if (introTxt && introBtn) {
+    const prev = introTxt.textContent;
+    introTxt.textContent = 'COPIED! ✓';
+    introBtn.classList.add('copied');
+    setTimeout(() => {
+      introTxt.textContent = prev;
+      introBtn.classList.remove('copied');
+    }, 2000);
+  }
+
+  // Visual feedback on showcase buttons
+  const glowBtns = document.querySelectorAll('.btn-ca-copy-glow');
+  glowBtns.forEach((btn) => {
+    btn.classList.add('copied');
+    const span = btn.querySelector('span');
+    if (span) {
+      const original = span.textContent;
+      span.textContent = 'COPIED! ✓';
+      setTimeout(() => {
+        span.textContent = original;
+        btn.classList.remove('copied');
+      }, 2000);
+    }
+  });
 }
 
 /* ==========================================================================
@@ -1233,7 +1262,35 @@ function switchTab(tabId) {
 }
 
 /* ==========================================================================
-   MINIMALIST FAST INTRO CONTROLLER
+   IMAGE LIGHTBOX CONTROLLER
+   ========================================================================== */
+function openImageModal(src, title, link) {
+  const modal = document.getElementById('imageModal');
+  const img = document.getElementById('imageModalImg');
+  const titleEl = document.getElementById('imageModalTitle');
+  const linkEl = document.getElementById('imageModalLink');
+  if (!modal || !img) return;
+
+  img.src = src;
+  if (titleEl) titleEl.textContent = title || 'Inspection';
+  if (linkEl) {
+    if (link) {
+      linkEl.href = link;
+      linkEl.style.display = 'inline-flex';
+    } else {
+      linkEl.style.display = 'none';
+    }
+  }
+  modal.classList.remove('hidden');
+}
+
+function closeImageModal() {
+  const modal = document.getElementById('imageModal');
+  if (modal) modal.classList.add('hidden');
+}
+
+/* ==========================================================================
+   INTERACTIVE INTRO GATE CONTROLLER
    ========================================================================== */
 function initIntroGate() {
   const gate = document.getElementById('introGate');
@@ -1249,18 +1306,22 @@ function initIntroGate() {
     gate.classList.add('dismissed');
     setTimeout(() => {
       gate.style.display = 'none';
-    }, 280);
+    }, 320);
   }
 
-  // Fast auto-boot progress animation
+  // Smooth auto-enter when bar reaches 100% (3.2 seconds)
+  const DURATION_MS = 3200;
   if (bar) {
+    bar.style.transition = `width ${DURATION_MS}ms cubic-bezier(0.2, 0.8, 0.2, 1)`;
     requestAnimationFrame(() => {
       bar.style.width = '100%';
     });
-    // Auto-enter smoothly after 1.2s if not manually clicked
+
     setTimeout(() => {
       dismissIntro();
-    }, 1200);
+    }, DURATION_MS + 100);
+  } else {
+    setTimeout(dismissIntro, 2500);
   }
 
   if (enterBtn) {
@@ -1268,14 +1329,18 @@ function initIntroGate() {
   }
 
   gate.addEventListener('click', (e) => {
-    if (e.target === gate || e.target.classList.contains('intro-backdrop')) {
-      dismissIntro();
+    // If user clicked copy CA or DEX links, don't dismiss immediately
+    if (e.target.closest('#introCopyCaBtn') || e.target.closest('.intro-dex-link')) {
+      return;
     }
+    dismissIntro();
   });
 
   window.addEventListener('keydown', (e) => {
-    if (!isDismissed && (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape')) {
+    if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
+      closeChartModal();
+      closeImageModal();
       dismissIntro();
     }
   });
@@ -1302,14 +1367,36 @@ window.addEventListener('DOMContentLoaded', () => {
   setInterval(fetchTrending, TRENDING_INTERVAL_MS);
 });
 
+function jumpToCallouts(filter) {
+  if (filter) {
+    state.calloutFilter = filter;
+    if (dom.calloutFilters) {
+      dom.calloutFilters.querySelectorAll('.chip-item').forEach((c) => {
+        c.classList.toggle('active', c.getAttribute('data-filter') === filter);
+      });
+    }
+    renderCalloutsGrid();
+  }
+  switchTab('tab-callouts');
+  const term = document.getElementById('terminal');
+  if (term) {
+    term.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
 // Global exports for inline HTML onclick handlers
 window.copyMainCA = copyMainCA;
 window.copyToClipboard = copyToClipboard;
 window.openChartModal = openChartModal;
 window.closeChartModal = closeChartModal;
+window.openImageModal = openImageModal;
+window.closeImageModal = closeImageModal;
 window.inspectTokenRadar = inspectTokenRadar;
 window.resetCalloutFilters = resetCalloutFilters;
 window.scrollToGame = scrollToGame;
 window.scrollToSidebarRadar = scrollToSidebarRadar;
 window.switchTab = switchTab;
+window.jumpToCallouts = jumpToCallouts;
+
+
 

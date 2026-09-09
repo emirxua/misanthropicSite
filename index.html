@@ -34,33 +34,57 @@
 </head>
 <body>
 
-  <!-- ULTRA-PREMIUM MINIMALIST TERMINAL INTRO GATE -->
+  <!-- ULTRA-PREMIUM $MISANTHROPIC INTRO GATEWAY -->
   <aside id="introGate" class="intro-gate" aria-label="System Intro">
     <div class="intro-backdrop" aria-hidden="true"></div>
     <div class="intro-card">
       
-      <!-- Flower Logo with Ambient Neon Pulse -->
+      <!-- Flower Mascot with Ambient Neon Pulse -->
       <div class="intro-logo-wrap">
         <div class="intro-pulse-ring" aria-hidden="true"></div>
-        <img src="assets/flower.png" alt="getmisanthropic" width="80" height="80" class="intro-flower-img">
+        <img src="assets/flower-pfp.png" alt="$MISANTHROPIC Mascot" width="84" height="84" class="intro-flower-img">
       </div>
 
       <!-- Brand Identity -->
       <div class="intro-header">
-        <h1 class="intro-title">getmisanthropic</h1>
-        <div class="intro-pill">
-          <span class="pulse-radar-dot"></span>
-          <span>PRO SOLANA ALPHA TERMINAL</span>
+        <h1 class="intro-title">$MISANTHROPIC</h1>
+        <div class="intro-pill-group">
+          <span class="intro-pill"><span class="pulse-radar-dot"></span>SOLANA MINT</span>
+          <span class="intro-pill intro-pill-burn">100% LP BURNED</span>
+          <span class="intro-pill intro-pill-tax">0% TAX</span>
+        </div>
+        <p class="intro-quote">"Anthropic will, ironically, be Misanthropic. Fate loves irony." <span>— Elon Musk</span></p>
+      </div>
+
+      <!-- Interactive Contract Address (CA) Box -->
+      <div class="intro-ca-box">
+        <div class="intro-ca-top">
+          <span class="intro-ca-lbl">OFFICIAL CONTRACT (CA)</span>
+          <span class="intro-ca-badge">SOLANA</span>
+        </div>
+        <div class="intro-ca-row">
+          <code class="intro-ca-code" id="introCaCode" title="AWQSXRxiNUGLj9moJMFhq2axqwu6Dqerp16ftj4FjLyG">AWQSXRxiNUGLj9moJMFhq2axqwu6Dqerp16ftj4FjLyG</code>
+          <button type="button" id="introCopyCaBtn" class="intro-copy-btn" onclick="copyMainCA()" title="Copy Contract Address">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+            <span id="introCopyTxt">COPY CA</span>
+          </button>
         </div>
       </div>
 
-      <!-- Action Button & Rapid Auto-Boot Bar -->
+      <!-- Quick DEX Links -->
+      <div class="intro-quick-links">
+        <a href="https://pump.fun/coin/AWQSXRxiNUGLj9moJMFhq2axqwu6Dqerp16ftj4FjLyG" target="_blank" rel="noopener noreferrer" class="intro-dex-link" title="Trade on Pump.fun">💊 Pump.fun</a>
+        <a href="https://dexscreener.com/solana/awqsxrxinuglj9mojmfhq2axqwu6dqerp16ftj4fjlyg" target="_blank" rel="noopener noreferrer" class="intro-dex-link" title="DexScreener Chart">🦅 DexScreener</a>
+        <a href="https://jup.ag/tokens/AWQSXRxiNUGLj9moJMFhq2axqwu6Dqerp16ftj4FjLyG" target="_blank" rel="noopener noreferrer" class="intro-dex-link" title="Swap on Jupiter">🪐 Jupiter</a>
+      </div>
+
+      <!-- Action Button & Progress Bar -->
       <div class="intro-action-box">
         <button type="button" id="introEnterBtn" class="intro-enter-btn" autofocus>
-          <span>ENTER TERMINAL</span>
+          <span>ENTER $MISANTHROPIC</span>
           <span class="btn-kbd">↵</span>
         </button>
-        <div class="intro-progress-bar-wrap" title="Auto-entering...">
+        <div class="intro-progress-bar-wrap" title="Auto-entering in 5s...">
           <div id="introProgressBar" class="intro-progress-bar"></div>
         </div>
       </div>
@@ -190,7 +214,13 @@
         <!-- Navigation Tab Switcher -->
         <div class="stage-tabs-header">
           <div class="tabs-slider">
-            <button type="button" class="tab-btn active" data-tab="tab-callouts" id="navBtnCallouts">
+            <button type="button" class="tab-btn active" data-tab="tab-coin" id="navBtnCoin">
+              <img src="assets/flower.png" width="16" height="16" class="tab-flower-icon" alt="">
+              <span>$MISANTHROPIC</span>
+              <span class="pill-badge pill-badge-hot">COIN</span>
+            </button>
+
+            <button type="button" class="tab-btn" data-tab="tab-callouts" id="navBtnCallouts">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/></svg>
               <span>Alpha Callouts</span>
               <span class="pill-badge" id="calloutCountBadge">LIVE</span>
@@ -203,7 +233,7 @@
 
             <button type="button" class="tab-btn" data-tab="tab-lore" id="navBtnLore">
               <span class="flower-emoji">🌸</span>
-              <span>flowerOS Lore</span>
+              <span>flowerOS &amp; Game</span>
             </button>
           </div>
 
@@ -212,8 +242,496 @@
           </button>
         </div>
 
-        <!-- PANE 1: ALPHA CALLOUTS -->
-        <div id="tab-callouts" class="stage-pane active">
+        <!-- =============================================================== -->
+        <!-- PANE 1: $MISANTHROPIC OFFICIAL COIN SHOWCASE & DOSSIER          -->
+        <!-- =============================================================== -->
+        <div id="tab-coin" class="stage-pane active">
+          
+          <!-- HERO VISUAL -->
+          <div class="coin-hero-visual" onclick="openImageModal('assets/misanthropic-art.png', '$MISANTHROPIC', 'https://pump.fun/coin/AWQSXRxiNUGLj9moJMFhq2axqwu6Dqerp16ftj4FjLyG')">
+            <img src="assets/misanthropic-art.png" alt="$MISANTHROPIC" class="coin-hero-img">
+            <div class="coin-hero-tags">
+              <span class="hero-tag-pill">⚡ Solana</span>
+              <span class="hero-tag-pill tag-accent">100% Community Takeover</span>
+              <span class="hero-tag-pill tag-green">100% LP Burned</span>
+              <span class="hero-tag-pill">0% Tax</span>
+            </div>
+          </div>
+
+          <!-- COIN IDENTITY & TAKEOVER -->
+          <div class="coin-profile-card">
+            <div class="coin-profile-top">
+              <div class="coin-pfp-wrap" onclick="openImageModal('assets/flower-pfp.png', '$MISANTHROPIC', 'https://pump.fun/coin/AWQSXRxiNUGLj9moJMFhq2axqwu6Dqerp16ftj4FjLyG')">
+                <img src="assets/flower-pfp.png" alt="$MISANTHROPIC" width="76" height="76" class="coin-pfp-img">
+                <span class="status-pulse-dot" title="On-Chain"></span>
+              </div>
+              <div class="coin-titles">
+                <div class="coin-sym-row">
+                  <h2 class="coin-main-sym">$MISANTHROPIC</h2>
+                  <span class="coin-net-tag">SOLANA</span>
+                  <span class="coin-status-pill">PUMP.FUN COIN</span>
+                </div>
+                <div class="coin-meta-name">Misanthropic · $MISANTHROPIC</div>
+              </div>
+            </div>
+
+            <!-- COMMUNITY STATEMENT -->
+            <blockquote class="takeover-quote-box">
+              <div class="quote-eyebrow">COMMUNITY TAKEOVER (16 FEB 2026)</div>
+              <p class="quote-main">“The real misanthropic(s) took over. Anthropic is Misanthropic.”</p>
+              <p class="quote-sub">“Unfortunately, any given AI company is destined to become the opposite of its name, so Anthropic will, ironically, be Misanthropic”</p>
+              <footer class="quote-author">— Elon Musk / Recorded on DexScreener</footer>
+            </blockquote>
+
+            <!-- CONTRACT & PAIR BAR -->
+            <div class="coin-ca-highlight-box">
+              <div class="ca-h-row">
+                <div class="ca-h-info">
+                  <span class="ca-h-lbl">CONTRACT (CA):</span>
+                  <code class="ca-h-val" id="coinShowcaseCa">AWQSXRxiNUGLj9moJMFhq2axqwu6Dqerp16ftj4FjLyG</code>
+                </div>
+                <button type="button" class="btn-ca-copy-glow" onclick="copyMainCA()">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                  <span>COPY CA</span>
+                </button>
+              </div>
+              <div class="ca-sub-details">
+                <div class="ca-sub-item">
+                  <span class="lbl">Primary Pair (PumpSwap):</span>
+                  <a href="https://www.geckoterminal.com/solana/pools/BSjw4Nhx3KYr5m3NL12RcPFmtyBnBa5ncMw2PazSTeVv" target="_blank" rel="noopener noreferrer" class="val-link" title="GeckoTerminal Pool">BSjw4Nhx3KYr5m3NL12RcPFmtyBnBa5ncMw2PazSTeVv ↗</a>
+                </div>
+                <div class="ca-sub-item">
+                  <span class="lbl">Wrapped SOL in Pair:</span>
+                  <span class="val-mono">So11111111111111111111111111111111111111112</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- INTERACTIVE ALPHA CALLOUTS TRANSITION BRIDGE -->
+          <div class="callout-bridge-card">
+            <div class="bridge-top">
+              <div class="bridge-left">
+                <div class="bridge-pill">
+                  <span class="pulse-radar-dot"></span>
+                  <span>SOLANA ALPHA RADAR</span>
+                </div>
+                <h3 class="bridge-title">Ready to Hunt On-Chain Solana Alpha?</h3>
+                <p class="bridge-desc">
+                  Explore real-time callouts across the Solana trenches, track 2x–100x multipliers, and monitor native DEX call streams directly in the terminal.
+                </p>
+              </div>
+              <div class="bridge-actions">
+                <button type="button" class="btn-bridge-enter" onclick="jumpToCallouts('all')">
+                  <span>ENTER CALLOUTS</span>
+                  <span class="btn-kbd">↵</span>
+                </button>
+                <button type="button" class="btn-bridge-chart" onclick="openChartModal('AWQSXRxiNUGLj9moJMFhq2axqwu6Dqerp16ftj4FjLyG', '$MISANTHROPIC')">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                  <span>LIVE CANDLES</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Quick Filter Jump Buttons -->
+            <div class="bridge-chips-row">
+              <span class="bridge-chips-lbl">Quick Filter:</span>
+              <div class="bridge-chips">
+                <button type="button" class="b-chip" onclick="jumpToCallouts('all')">All Signals</button>
+                <button type="button" class="b-chip chip-hot" onclick="jumpToCallouts('2x')">🚀 2x+ Calls</button>
+                <button type="button" class="b-chip chip-fire" onclick="jumpToCallouts('5x')">🔥 5x+ Calls</button>
+                <button type="button" class="b-chip chip-crown" onclick="jumpToCallouts('10x')">👑 10x+ Calls</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- TOKENOMICS METRICS -->
+          <div class="coin-section-heading">
+            <span class="section-badge">TOKENOMICS</span>
+            <h3>Supply &amp; Protocol Metrics</h3>
+          </div>
+          <div class="tokenomics-grid-cards">
+            <div class="tok-card">
+              <span class="tok-label">TOTAL SUPPLY</span>
+              <div class="tok-value-huge font-mono">1,000,000,000</div>
+              <span class="tok-sub">1 Billion Fixed Supply</span>
+            </div>
+            <div class="tok-card">
+              <span class="tok-label">TAX</span>
+              <div class="tok-value-huge color-green">0% / 0%</div>
+              <span class="tok-sub">Zero Buy / Zero Sell Tax</span>
+            </div>
+            <div class="tok-card">
+              <span class="tok-label">LIQUIDITY</span>
+              <div class="tok-value-huge color-gold">100% BURNED</div>
+              <span class="tok-sub">Pump.fun coin, LP burned forever</span>
+            </div>
+            <div class="tok-card">
+              <span class="tok-label">NETWORK</span>
+              <div class="tok-value-huge color-purple">SOLANA</div>
+              <span class="tok-sub">SPL Token Standard</span>
+            </div>
+            <div class="tok-card">
+              <span class="tok-label">TAKEOVER</span>
+              <div class="tok-value-huge">16 FEB 2026</div>
+              <span class="tok-sub">DexScreener Recorded Event</span>
+            </div>
+            <div class="tok-card">
+              <span class="tok-label">ATH</span>
+              <div class="tok-value-huge color-orange">~$168,000</div>
+              <span class="tok-sub">Pump.fun All-Time High</span>
+            </div>
+          </div>
+
+          <!-- MARKET NOTE -->
+          <div class="market-disclosure-pill">
+            <span class="disc-icon">⚡</span>
+            <div class="disc-text">
+              Across DexScreener, Pump.fun, GeckoTerminal, and Jupiter, the token trades as a micro-cap with 100% burned LP and 390–480 on-chain holders.
+            </div>
+          </div>
+
+          <!-- ALL 7 OFFICIAL LIVE LOOKUP LINKS -->
+          <div class="coin-section-heading">
+            <span class="section-badge">OFFICIAL LINKS</span>
+            <h3>Live DEX &amp; Trading Portals</h3>
+          </div>
+          <div class="official-links-grid">
+            <a href="https://dexscreener.com/solana/awqsxrxinuglj9mojmfhq2axqwu6dqerp16ftj4fjlyg" target="_blank" rel="noopener noreferrer" class="link-card-box">
+              <div class="link-card-left">
+                <span class="link-icon">🦅</span>
+                <div>
+                  <strong>DexScreener</strong>
+                  <span>Real-time charts, candles, depth &amp; trades</span>
+                </div>
+              </div>
+              <span class="link-arrow">↗</span>
+            </a>
+
+            <a href="https://pump.fun/coin/AWQSXRxiNUGLj9moJMFhq2axqwu6Dqerp16ftj4FjLyG" target="_blank" rel="noopener noreferrer" class="link-card-box">
+              <div class="link-card-left">
+                <span class="link-icon">💊</span>
+                <div>
+                  <strong>Pump.fun</strong>
+                  <span>Original bonding curve &amp; community comments</span>
+                </div>
+              </div>
+              <span class="link-arrow">↗</span>
+            </a>
+
+            <a href="https://jup.ag/tokens/AWQSXRxiNUGLj9moJMFhq2axqwu6Dqerp16ftj4FjLyG" target="_blank" rel="noopener noreferrer" class="link-card-box">
+              <div class="link-card-left">
+                <span class="link-icon">🪐</span>
+                <div>
+                  <strong>Jupiter</strong>
+                  <span>Best-route Solana DEX aggregator swap</span>
+                </div>
+              </div>
+              <span class="link-arrow">↗</span>
+            </a>
+
+            <a href="https://www.geckoterminal.com/solana/pools/BSjw4Nhx3KYr5m3NL12RcPFmtyBnBa5ncMw2PazSTeVv" target="_blank" rel="noopener noreferrer" class="link-card-box">
+              <div class="link-card-left">
+                <span class="link-icon">🦎</span>
+                <div>
+                  <strong>GeckoTerminal</strong>
+                  <span>PumpSwap pool liquidity tracker (Misanthropic / SOL)</span>
+                </div>
+              </div>
+              <span class="link-arrow">↗</span>
+            </a>
+
+            <a href="https://www.solflare.com/prices/misanthropic/AWQSXRxiNUGLj9moJMFhq2axqwu6Dqerp16ftj4FjLyG/" target="_blank" rel="noopener noreferrer" class="link-card-box">
+              <div class="link-card-left">
+                <span class="link-icon">☀️</span>
+                <div>
+                  <strong>Solflare</strong>
+                  <span>Wallet token profile &amp; real-time quote</span>
+                </div>
+              </div>
+              <span class="link-arrow">↗</span>
+            </a>
+
+            <a href="https://web3.bitget.com/en/swap/sol/AWQSXRxiNUGLj9moJMFhq2axqwu6Dqerp16ftj4FjLyG" target="_blank" rel="noopener noreferrer" class="link-card-box">
+              <div class="link-card-left">
+                <span class="link-icon">💼</span>
+                <div>
+                  <strong>Bitget Web3</strong>
+                  <span>Web3 swap terminal</span>
+                </div>
+              </div>
+              <span class="link-arrow">↗</span>
+            </a>
+
+            <a href="/scanner" class="link-card-box highlight-scanner">
+              <div class="link-card-left">
+                <span class="link-icon">🔍</span>
+                <div>
+                  <strong>Native Token Scanner</strong>
+                  <span>getmisanthropic on-chain scanner</span>
+                </div>
+              </div>
+              <span class="link-arrow">→</span>
+            </a>
+          </div>
+
+          <!-- ELON MUSK TWEET SPOTLIGHT (ALL USER PHOTOS SHOWCASED) -->
+          <div class="coin-section-heading">
+            <span class="section-badge">THE MUSK CATALYSTS</span>
+            <h3>Viral X Posts</h3>
+          </div>
+
+          <div class="tweet-photos-grid">
+            
+            <!-- TWEET PHOTO 1: FEB 24 2026 -->
+            <div class="tweet-photo-card" onclick="openImageModal('assets/tweet-feb24.png', 'Elon Musk: MisAnthropic (24 Feb 2026)', 'https://x.com/elonmusk/status/2026144396283113744')">
+              <div class="tweet-card-top">
+                <div class="tweet-meta-left">
+                  <span class="tweet-badge-date">24 FEB 2026</span>
+                  <span class="tweet-badge-target">Replying to Mark Kretschmann</span>
+                </div>
+                <span class="btn-x-micro">X ↗</span>
+              </div>
+              <div class="tweet-img-container">
+                <img src="assets/tweet-feb24.png" alt="Elon Musk 24 Feb 2026 MisAnthropic tweet" class="tweet-screenshot-img">
+              </div>
+              <div class="tweet-caption-box">
+                <p class="tweet-quote-text">“MisAnthropic”</p>
+                <div class="tweet-action-line">
+                  <span class="tweet-views">42M+ Views on X</span>
+                  <a href="https://x.com/elonmusk/status/2026144396283113744" target="_blank" rel="noopener noreferrer" class="tweet-direct-link" onclick="event.stopPropagation()">View on X ↗</a>
+                </div>
+              </div>
+            </div>
+
+            <!-- TWEET PHOTO 2: JAN 22 2026 -->
+            <div class="tweet-photo-card" onclick="openImageModal('assets/tweet-jan22.png', 'Elon Musk: Destiny & Irony (22 Jan 2026)', 'https://x.com/elonmusk/status/2014178428107268306')">
+              <div class="tweet-card-top">
+                <div class="tweet-meta-left">
+                  <span class="tweet-badge-date">22 JAN 2026</span>
+                  <span class="tweet-badge-target">Replying to @AmandaAskell</span>
+                </div>
+                <span class="btn-x-micro">X ↗</span>
+              </div>
+              <div class="tweet-img-container">
+                <img src="assets/tweet-jan22.png" alt="Elon Musk 22 Jan 2026 tweet" class="tweet-screenshot-img">
+              </div>
+              <div class="tweet-caption-box">
+                <p class="tweet-quote-text">“Unfortunately, any given AI company is destined to become the opposite of its name, so Anthropic will, ironically, be Misanthropic”</p>
+                <div class="tweet-action-line">
+                  <span class="tweet-views">DexScreener Profile Origin</span>
+                  <a href="https://x.com/elonmusk/status/2014178428107268306" target="_blank" rel="noopener noreferrer" class="tweet-direct-link" onclick="event.stopPropagation()">View on X ↗</a>
+                </div>
+              </div>
+            </div>
+
+            <!-- TWEET PHOTO 3: JAN 31 2026 -->
+            <div class="tweet-photo-card" onclick="openImageModal('assets/tweet-jan31.png', 'Elon Musk: Fate Loves Irony (31 Jan 2026)', 'https://x.com/elonmusk/status/2017354859452961064')">
+              <div class="tweet-card-top">
+                <div class="tweet-meta-left">
+                  <span class="tweet-badge-date">31 JAN 2026</span>
+                  <span class="tweet-badge-target">Replying to Alex Reibman</span>
+                </div>
+                <span class="btn-x-micro">X ↗</span>
+              </div>
+              <div class="tweet-img-container">
+                <img src="assets/tweet-jan31.png" alt="Elon Musk 31 Jan 2026 fate loves irony tweet" class="tweet-screenshot-img">
+              </div>
+              <div class="tweet-caption-box">
+                <p class="tweet-quote-text">“Always worth remembering that fate loves irony. The most ironic outcome for a company named @AnthropicAI would be that it is the most misanthropic!”</p>
+                <div class="tweet-action-line">
+                  <span class="tweet-views">20M+ Views on X</span>
+                  <a href="https://x.com/elonmusk/status/2017354859452961064" target="_blank" rel="noopener noreferrer" class="tweet-direct-link" onclick="event.stopPropagation()">View on X ↗</a>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- COMPLETE ELON MUSK TWEET TIMELINE ARCHIVE (ALL 9 POSTS) -->
+          <div class="coin-section-heading">
+            <span class="section-badge">COMPLETE LORE ARCHIVE</span>
+            <h3>The Elon Musk Tweet Timeline (9 Posts)</h3>
+            <p class="section-subtext">Verbatim text &amp; direct links to every post used by the $MISANTHROPIC community.</p>
+          </div>
+
+          <div class="tweet-timeline-container">
+            <div class="timeline-track">
+
+              <div class="timeline-entry">
+                <div class="tl-bullet"></div>
+                <div class="tl-content">
+                  <div class="tl-head">
+                    <span class="tl-date">26 July 2025</span>
+                    <a href="https://x.com/elonmusk/status/1949037599378850037" target="_blank" rel="noopener noreferrer" class="tl-link">x.com/status/1949... ↗</a>
+                  </div>
+                  <p class="tl-text">“Every AI company is doomed to become the opposite of its name. OpenAI is closed Stability is unstable MidJourney isn’t mid Therefore, Anthropic is Misanthropic.”</p>
+                </div>
+              </div>
+
+              <div class="timeline-entry">
+                <div class="tl-bullet"></div>
+                <div class="tl-content">
+                  <div class="tl-head">
+                    <span class="tl-date">22 January 2026</span>
+                    <a href="https://x.com/elonmusk/status/2014178428107268306" target="_blank" rel="noopener noreferrer" class="tl-link">x.com/status/2014... ↗</a>
+                  </div>
+                  <p class="tl-text">“Unfortunately, any given AI company is destined to become the opposite of its name, so Anthropic will, ironically, be Misanthropic”</p>
+                  <span class="tl-note">Reused as the token's original DexScreener profile.</span>
+                </div>
+              </div>
+
+              <div class="timeline-entry">
+                <div class="tl-bullet"></div>
+                <div class="tl-content">
+                  <div class="tl-head">
+                    <span class="tl-date">29 January 2026</span>
+                    <a href="https://x.com/elonmusk/status/2016794462484062597" target="_blank" rel="noopener noreferrer" class="tl-link">x.com/status/2016... ↗</a>
+                  </div>
+                  <p class="tl-text">“MisAnthropic would be the most ironic outcome and fate loves irony”</p>
+                </div>
+              </div>
+
+              <div class="timeline-entry">
+                <div class="tl-bullet"></div>
+                <div class="tl-content">
+                  <div class="tl-head">
+                    <span class="tl-date">30 January 2026</span>
+                    <a href="https://x.com/elonmusk/status/2017354859452961064" target="_blank" rel="noopener noreferrer" class="tl-link">x.com/status/2017... ↗</a>
+                  </div>
+                  <p class="tl-text">“Always worth remembering that fate loves irony. The most ironic outcome for a company named @AnthropicAI would be that it is the most misanthropic!”</p>
+                </div>
+              </div>
+
+              <div class="timeline-entry">
+                <div class="tl-bullet"></div>
+                <div class="tl-content">
+                  <div class="tl-head">
+                    <span class="tl-date">31 January 2026</span>
+                    <a href="https://x.com/elonmusk/status/2017466805045104974" target="_blank" rel="noopener noreferrer" class="tl-link">x.com/status/2017... ↗</a>
+                  </div>
+                  <p class="tl-text">“I hate to say it, but their fate is to be misanthropic. Choosing the name Anthropic made that inevitable.”</p>
+                </div>
+              </div>
+
+              <div class="timeline-entry">
+                <div class="tl-bullet"></div>
+                <div class="tl-content">
+                  <div class="tl-head">
+                    <span class="tl-date">12 February 2026</span>
+                    <a href="https://x.com/elonmusk/status/2022036387885892022" target="_blank" rel="noopener noreferrer" class="tl-link">x.com/status/2022... ↗</a>
+                  </div>
+                  <p class="tl-text">Reply to Anthropic’s funding announcement: “Your AI hates Whites &amp; Asians, especially Chinese, heterosexuals and men. This is misanthropic and evil. Fix it. Frankly, I don’t think there is anything you can do to escape the inevitable irony of Anthropic ending up being Misanthropic. You were doomed to this fate when you chose your name. The Name of the Wind.”</p>
+                  <span class="tl-note">The longest and most quoted attack in the news cycle.</span>
+                </div>
+              </div>
+
+              <div class="timeline-entry">
+                <div class="tl-bullet"></div>
+                <div class="tl-content">
+                  <div class="tl-head">
+                    <span class="tl-date">14 February 2026</span>
+                    <a href="https://x.com/elonmusk/status/2022740111553937479" target="_blank" rel="noopener noreferrer" class="tl-link">x.com/status/2022... ↗</a>
+                  </div>
+                  <p class="tl-text">“Anthropic is Misanthropic”</p>
+                </div>
+              </div>
+
+              <div class="timeline-entry">
+                <div class="tl-bullet"></div>
+                <div class="tl-content">
+                  <div class="tl-head">
+                    <span class="tl-date">14 February 2026</span>
+                    <a href="https://x.com/elonmusk/status/2022752939421421761" target="_blank" rel="noopener noreferrer" class="tl-link">x.com/status/2022... ↗</a>
+                  </div>
+                  <p class="tl-text">“Anthropic will be Misanthropic. Fate is an irony maxxer.”</p>
+                </div>
+              </div>
+
+              <div class="timeline-entry highlight-takeover">
+                <div class="tl-bullet gold"></div>
+                <div class="tl-content">
+                  <div class="tl-head">
+                    <span class="tl-date">16 February 2026</span>
+                    <span class="tl-tag-takeover">COMMUNITY TAKEOVER</span>
+                  </div>
+                  <p class="tl-text">DexScreener records community ownership takeover on mint AWQSXRxiNUGLj9moJMFhq2axqwu6Dqerp16ftj4FjLyG. “The real misanthropic(s) took over.”</p>
+                </div>
+              </div>
+
+              <div class="timeline-entry">
+                <div class="tl-bullet"></div>
+                <div class="tl-content">
+                  <div class="tl-head">
+                    <span class="tl-date">24 February 2026</span>
+                    <a href="https://x.com/elonmusk/status/2026144396283113744" target="_blank" rel="noopener noreferrer" class="tl-link">x.com/status/2026... ↗</a>
+                  </div>
+                  <p class="tl-text">“MisAnthropic”</p>
+                  <span class="tl-note">Viral one-word response to Mark Kretschmann.</span>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="timeline-disclaimer">
+              <em>Note: Elon Musk did not launch this token and did not post the mint address. The token is a decentralized community meme reaction born from these posts.</em>
+            </div>
+          </div>
+
+          <!-- ETYMOLOGY & PHILOSOPHY DEEP DIVE -->
+          <div class="coin-section-heading">
+            <span class="section-badge">THE PHILOSOPHY</span>
+            <h3>Etymology &amp; Why $MISANTHROPIC Exists</h3>
+          </div>
+
+          <div class="lore-narrative-deck">
+            
+            <div class="narrative-card">
+              <div class="narrative-badge">ETYMOLOGY</div>
+              <h4>What the Word "Misanthropic" Means</h4>
+              <p>
+                Misanthropic comes from the ancient Greek <strong>misos</strong> (hate) and <strong>anthropos</strong> (human). It describes an enduring, philosophical distrust, dislike, or contempt for humankind as a whole — not a temporary bad mood toward one individual.
+              </p>
+              <p>
+                Throughout literature, the archetype is immortalized in Molière’s classic comedy <em>Le Misanthrope</em>. In this token, the word is deployed with sharp irony: Anthropic’s corporate name gestures at being “human &amp; humane,” while Elon Musk argued the organization and its models inexorably drifted toward the opposite.
+              </p>
+            </div>
+
+            <div class="narrative-card">
+              <div class="narrative-badge">ORIGIN STORY</div>
+              <h4>Why the Token Exists</h4>
+              <p>
+                Anthropic is the company behind the Claude LLM series. Elon Musk’s xAI (Grok) actively competes with it. Starting in 2025 and escalating through February 2026, Musk asserted that every major AI lab becomes the opposite of its name:
+              </p>
+              <ul class="narrative-list">
+                <li><strong>OpenAI</strong> becomes closed.</li>
+                <li><strong>Stability AI</strong> becomes unstable.</li>
+                <li><strong>Midjourney</strong> isn’t mid.</li>
+                <li>Therefore, <strong>Anthropic</strong> becomes <strong>Misanthropic</strong>.</li>
+              </ul>
+              <p>
+                After Anthropic closed a massive funding round, Musk intensified the critique, calling the outputs "misanthropic and evil." The memecoin embraced this exact cultural moment, adopting the sentences into its identity, community manifesto, and on-chain culture.
+              </p>
+            </div>
+
+            <div class="narrative-card">
+              <div class="narrative-badge">THE FLOWER MASCOT</div>
+              <h4>A Crying Flower on Solana</h4>
+              <p>
+                The project embodies the token as a blue-teared crying flower deployed on Solana: a character that hates small talk, dodges humans at all costs, and pumps on-chain.
+              </p>
+              <div class="mascot-action-strip">
+                <button type="button" class="btn-accent" onclick="switchTab('tab-lore'); scrollToGame();">🎮 Play Misanthropic Run</button>
+                <button type="button" class="btn-subtle" onclick="copyMainCA()">📋 Copy Contract Address</button>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- PANE 2: ALPHA CALLOUTS -->
+        <div id="tab-callouts" class="stage-pane">
           
           <!-- Filter Controls & Search -->
           <div class="control-row">
@@ -469,7 +987,11 @@
 
   <!-- MOBILE BOTTOM DOCK -->
   <nav class="mobile-dock" aria-label="Mobile Navigation">
-    <button type="button" class="dock-btn active" data-tab="tab-callouts">
+    <button type="button" class="dock-btn active" data-tab="tab-coin">
+      <img src="assets/flower-pfp.png" width="16" height="16" class="dock-icon-img" alt="">
+      <span>$MIS</span>
+    </button>
+    <button type="button" class="dock-btn" data-tab="tab-callouts">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/></svg>
       <span>Callouts</span>
     </button>
@@ -483,7 +1005,7 @@
     </button>
     <button type="button" class="dock-btn" data-tab="tab-lore">
       <span class="flower-emoji">🌸</span>
-      <span>Lore</span>
+      <span>Game</span>
     </button>
   </nav>
 
@@ -500,6 +1022,24 @@
       </div>
       <div class="modal-iframe-box">
         <iframe id="dexChartIframe" src="" frameborder="0" allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- IMAGE / TWEET ZOOM LIGHTBOX MODAL -->
+  <div id="imageModal" class="image-modal hidden" role="dialog" aria-modal="true" onclick="closeImageModal()">
+    <div class="image-modal-backdrop"></div>
+    <div class="image-modal-container" onclick="event.stopPropagation()">
+      <div class="image-modal-bar">
+        <span id="imageModalTitle" class="image-modal-title">Inspection</span>
+        <button type="button" class="btn-close-modal" onclick="closeImageModal()">✕</button>
+      </div>
+      <div class="image-modal-body">
+        <img id="imageModalImg" src="" alt="Enlarged preview" class="image-modal-img">
+      </div>
+      <div class="image-modal-footer">
+        <a id="imageModalLink" href="#" target="_blank" rel="noopener noreferrer" class="btn-modal-action">View Link ↗</a>
+        <button type="button" class="btn-modal-close" onclick="closeImageModal()">Close</button>
       </div>
     </div>
   </div>
